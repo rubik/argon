@@ -5,14 +5,17 @@ import Data.Data (Data)
 import Data.Generics.Uniplate.Data (childrenBi, universeBi)
 import Language.Haskell.Exts.Syntax
 
-type ComplexityResult = (String, SrcLoc, Int)
+type ComplexityResult = (String, Int, Int, Int)
 
 
-funCC :: Decl -> ComplexityResult
-funCC f@(FunBind (Match loc n _ _ _ _:_)) = (name n, loc, complexity f)
+funcsCC :: Data from => from -> [ComplexityResult]
+funcsCC ast = map funCC [matches | FunBind matches <- universeBi ast]
+
+funCC :: [Match] -> ComplexityResult
+funCC [] = ("<unknown>", 0, 0, 0)
+funCC ms@(Match (SrcLoc _ l c) n _ _ _ _:_) = (name n, l, c, complexity ms)
     where name (Ident s)   = s
           name (Symbol s) = s
-funCC _ = ("<unknown>", SrcLoc "<unknown>.hs" 0 0, 0)
 
 sumWith :: (a -> Int) -> [a] -> Int
 sumWith f = sum . map f

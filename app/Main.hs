@@ -1,8 +1,12 @@
 module Main where
 
-import Control.Monad (mapM)
 import System.Environment (getArgs)
 import Argon (parseCode)
 
+readWithName :: String -> IO (Maybe String, String)
+readWithName path = do
+    contents <- readFile path
+    return (Just path, contents)
+
 main :: IO ()
-main = print . parseCode (Just path) =<< mapM readFile =<< getArgs
+main = getArgs >>= mapM readWithName >>= print . map (uncurry parseCode)
