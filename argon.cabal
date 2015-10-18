@@ -18,6 +18,7 @@ library
   exposed-modules:     Argon
   other-modules:       Argon.Parser
                        Argon.Visitor
+                       Argon.Pretty
   build-depends:       base             >=4.7    && <5
                      , haskell-src-exts ==1.16.*
                      , uniplate         ==1.6.*

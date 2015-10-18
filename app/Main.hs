@@ -1,7 +1,7 @@
 module Main where
 
 import System.Environment (getArgs)
-import Argon (parseCode)
+import Argon (parseCode, formatResult)
 
 readWithName :: String -> IO (Maybe String, String)
 readWithName path = do
@@ -9,4 +9,5 @@ readWithName path = do
     return (Just path, contents)
 
 main :: IO ()
-main = getArgs >>= mapM readWithName >>= print . map (uncurry parseCode)
+main = getArgs >>= mapM readWithName
+               >>= mapM_ (putStrLn . formatResult . uncurry parseCode)
