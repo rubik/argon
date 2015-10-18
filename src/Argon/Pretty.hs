@@ -20,7 +20,7 @@ coloredFunc :: String -> String
 coloredFunc f = fore Cyan ++ f ++ reset
 
 coloredRank :: Int -> String
-coloredRank c = fore color ++ rank ++ reset
+coloredRank c = printf "%s%s (%d)%s" (fore color) rank c reset
     where (color, rank)
             | c <= 5    = (Green,  "A")
             | c <= 10   = (Yellow, "B")
