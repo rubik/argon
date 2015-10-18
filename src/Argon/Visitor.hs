@@ -26,15 +26,16 @@ visitMatches = sumWith descend . childrenBi
           descend x = length x - 1 + sumWith visitMatches x
 
 visitExps :: Data from => from -> Int
-visitExps = sumWith pathCount . universeBi
-    where pathCount :: Exp -> Int
-          pathCount (If {})        = 1
-          pathCount (MultiIf alts) = length alts - 1
-          pathCount (Case _ alts)  = length alts - 1
-          pathCount (LCase alts)   = length alts - 1
-          pathCount (InfixApp _ (QVarOp (UnQual (Symbol op))) _) =
-              case op of
-                "||" -> 1
-                "&&" -> 1
-                _    -> 0
-          pathCount _ = 0
+visitExps = sumWith visitExp . universeBi
+
+visitExp :: Exp -> Int
+visitExp (If {})        = 1
+visitExp (MultiIf alts) = length alts - 1
+visitExp (Case _ alts)  = length alts - 1
+visitExp (LCase alts)   = length alts - 1
+visitExp (InfixApp _ (QVarOp (UnQual (Symbol op))) _) =
+  case op of
+    "||" -> 1
+    "&&" -> 1
+    _    -> 0
+visitExp _ = 0
