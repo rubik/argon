@@ -10,4 +10,4 @@ readWithName path = do
 
 main :: IO ()
 main = getArgs >>= mapM readWithName
-               >>= mapM_ (putStrLn . formatResult . uncurry parseCode)
+               >>= mapM_ (putStr . formatResult . uncurry parseCode)
