@@ -2,12 +2,14 @@ module Argon.Parser (parseCode)
     where
 
 import Data.Maybe (fromMaybe)
+import Control.Exception (SomeException, evaluate, catch)
 import Language.Haskell.Exts
+import Language.Haskell.Exts.SrcLoc (noLoc)
 import Language.Haskell.Exts.Parser (ParseMode(..), defaultParseMode
-                                    , parseModuleWithMode
-                                    , fromParseResult)
+                                    , parseModuleWithMode)
 import Language.Preprocessor.Cpphs
-import Argon.Visitor (ComplexityResult, funcsCC)
+import Argon.Visitor (funcsCC)
+import Argon.Types (AnalysisResult)
 
 
 -- Very permissive extension set
@@ -22,12 +24,11 @@ customExts = EnableExtension `map`
              FunctionalDependencies, ExistentialQuantification, ImplicitParams,
              UnicodeSyntax, LambdaCase, TupleSections, NamedFieldPuns]
 
-filenameMode :: String -> ParseMode
-filenameMode fn = defaultParseMode {
-                    parseFilename     = fn
-                  , extensions        = customExts
-                  , ignoreLinePragmas = False
-                  }
+argonMode :: ParseMode
+argonMode = defaultParseMode {
+                  extensions        = customExts
+                , ignoreLinePragmas = False
+                }
 
 cppHsOpts :: CpphsOptions
 cppHsOpts = defaultCpphsOptions {
@@ -41,9 +42,17 @@ cppHsOpts = defaultCpphsOptions {
                            }
             }
 
-parseCode :: Maybe String -> String -> (String, [ComplexityResult])
-parseCode m = let fname = fromMaybe "<unknown>.hs" m
-                in (,) fname . funcsCC . parseMModule fname
+handleException :: (String -> ParseResult a) -> SomeException -> IO (ParseResult a)
+handleException helper = return . helper . show
 
-parseMModule :: String -> String -> Module
-parseMModule fname = fromParseResult . parseModuleWithMode (filenameMode fname)
+parseCode :: Maybe String -> String -> IO (FilePath, AnalysisResult)
+parseCode m source = do
+    let fname = fromMaybe "<unknown>.hs" m
+    parsed <- (do
+        result <- parseModuleWithMode argonMode <$>
+            runCpphs cppHsOpts fname source
+        evaluate result) `catch` handleException (ParseFailed noLoc)
+    let res = case parsed of
+                ParseOk mod       -> Right $ funcsCC mod
+                ParseFailed _ msg -> Left msg
+    return (fname, res)

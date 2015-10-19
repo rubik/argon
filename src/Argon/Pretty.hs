@@ -4,7 +4,7 @@ module Argon.Pretty (formatResult)
 import Text.Printf (printf)
 import Data.List (intersperse)
 import System.Console.ANSI
-import Argon.Visitor (ComplexityResult)
+import Argon.Types (AnalysisResult)
 
 
 open :: String
@@ -27,9 +27,16 @@ coloredRank c = printf "%s%s (%d)%s" (fore color) rank c reset
             | c <= 10   = (Yellow, "B")
             | otherwise = (Red,    "C")
 
-formatResult :: (String, [ComplexityResult]) -> String
-formatResult (_, [])    = ""
-formatResult (name, rs) = printf "%s%s%s\n\t%s\n%s" open name reset rest reset
+coloredError :: String -> String
+coloredError msg = printf "%serror%s: %s" (fore Red) reset msg
+
+resultBlock :: String -> String -> String
+resultBlock name rest = printf "%s%s%s\n\t%s\n%s" open name reset rest reset
+
+formatResult :: (FilePath, AnalysisResult) -> String
+formatResult (name, Left msg) = resultBlock name $ coloredError msg
+formatResult (_,    Right []) = ""
+formatResult (name, Right rs) = resultBlock name rest
     where rest     = concat (intersperse "\n\t" $ map single rs)
           single (l, c, func, cc) =
               printf "%d:%d %s - %s%s" l c (coloredFunc func c)

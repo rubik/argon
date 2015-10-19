@@ -20,6 +20,7 @@ library
                        Argon.Visitor
                        Argon.Results
                        Argon.Pretty
+                       Argon.Types
   build-depends:       base             >=4.8    && <5
                      , haskell-src-exts ==1.16.*
                      , cpphs            ==1.19.*

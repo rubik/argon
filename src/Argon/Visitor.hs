@@ -1,11 +1,10 @@
-module Argon.Visitor
+module Argon.Visitor (funcsCC)
     where
 
 import Data.Data (Data)
 import Data.Generics.Uniplate.Data (childrenBi, universeBi)
 import Language.Haskell.Exts.Syntax
-
-type ComplexityResult = (Int, Int, String, Int)
+import Argon.Types (ComplexityResult)
 
 
 funcsCC :: Data from => from -> [ComplexityResult]
