@@ -29,16 +29,20 @@ visitMatches = sumWith descend . childrenBi
           descend x = length x - 1 + sumWith visitMatches x
 
 visitExps :: Data from => from -> Int
-visitExps = sumWith visitExp . universeBi
+visitExps = sumWith inspect . universeBi
+    where inspect e = visitExp e + visitOp e
 
 visitExp :: Exp -> Int
 visitExp (If {})        = 1
 visitExp (MultiIf alts) = length alts - 1
 visitExp (Case _ alts)  = length alts - 1
 visitExp (LCase alts)   = length alts - 1
-visitExp (InfixApp _ (QVarOp (UnQual (Symbol op))) _) =
+visitExp _ = 0
+
+visitOp :: Exp -> Int
+visitOp (InfixApp _ (QVarOp (UnQual (Symbol op))) _) =
   case op of
     "||" -> 1
     "&&" -> 1
     _    -> 0
-visitExp _ = 0
+visitOp _ = 0

@@ -16,8 +16,9 @@ fore color = setSGRCode [SetColor Foreground Dull color]
 reset :: String
 reset = setSGRCode []
 
-coloredFunc :: String -> String
-coloredFunc f = fore Cyan ++ f ++ reset
+coloredFunc :: String -> Int -> String
+coloredFunc f c = fore color ++ f ++ reset
+    where color = if c == 1 then Cyan else Magenta
 
 coloredRank :: Int -> String
 coloredRank c = printf "%s%s (%d)%s" (fore color) rank c reset
@@ -31,4 +32,5 @@ formatResult (_, [])    = ""
 formatResult (name, rs) = printf "%s%s%s\n\t%s\n%s" open name reset rest reset
     where rest     = concat (intersperse "\n\t" $ map single rs)
           single (l, c, func, cc) =
-              printf "%d:%d %s - %s%s" l c (coloredFunc func) (coloredRank cc) reset
+              printf "%d:%d %s - %s%s" l c (coloredFunc func c)
+                                       (coloredRank cc) reset

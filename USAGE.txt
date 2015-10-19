@@ -1,0 +1,7 @@
+Usage:
+    argon [-h] [-m=<min>] <paths>...
+
+Options:
+    -h --help       show this help
+    -m --min=<n>    the minimum complexity to show in results
+
