@@ -33,7 +33,7 @@ matrix:
         - hvr-ghc
         packages:
         - ghc-7.8.4
-  - env: GHCVER=7.10.1 STACK_YAML=stack-7.10.yaml
+  - env: GHCVER=7.10.1 STACK_YAML=stack.yaml
     addons:
       apt:
         sources:
@@ -42,8 +42,8 @@ matrix:
         - ghc-7.10.1
 
 install:
-  - stack +RTS -N2 -RTS setup
-  - stack +RTS -N2 -RTS build --only-snapshot
+  - stack +RTS -N2 -RTS setup --no-terminal
+  - stack +RTS -N2 -RTS build --only-snapshot --no-terminal
 
 script:
-  - stack +RTS -N2 -RTS test :argon-test
+  - stack +RTS -N2 -RTS test :argon-test --no-terminal
