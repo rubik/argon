@@ -9,6 +9,7 @@
 </p>
 
 <img alt="Argon screenshot"
+     align="center"
      src="https://cloud.githubusercontent.com/assets/238549/10623810/b91bff12-7792-11e5-8f86-af7ec4e98579.png">
 
 <hr>
