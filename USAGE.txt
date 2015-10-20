@@ -1,7 +1,8 @@
 Usage:
-    argon [-h] [--no-color] [-m=<min>] <paths>...
+    argon [-h] [--no-color | --json] [-m=<min>] <paths>...
 
 Options:
     -h --help       show this help
     -m --min=<n>    the minimum complexity to show in results
     --no-color      results are not colored
+    -j --json       results are serialized to JSON

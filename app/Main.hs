@@ -22,12 +22,14 @@ processFile path = do
 
 main :: IO ()
 main = do
-    args  <- parseArgsOrExit patterns =<< getArgs
-    res   <- mapM processFile $ args `getAllArgs` argument "paths"
+    args <- parseArgsOrExit patterns =<< getArgs
+    res  <- mapM processFile $ args `getAllArgs` argument "paths"
     let opts = ResultsOptions {
         minCC      = read $ getOpt args "1" "min"
-      , outputMode = case args `isPresent` longOption "no-color" of
-                       True  -> BareText
-                       False -> Colored
+      , outputMode = if args `isPresent` longOption "json"
+                        then JSON
+                        else if args `isPresent` longOption "no-color"
+                                then BareText
+                                else Colored
       }
-    mapM_ (putStr . export opts . filterResults opts) res
+    putStr $ export opts $ map (filterResults opts) res

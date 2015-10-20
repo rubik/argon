@@ -2,7 +2,7 @@ module Argon.Results (order, filterResults, export)
     where
 
 import Data.List (sortOn)
-import Argon.Formatters (bareTextFormatter, coloredTextFormatter)
+import Argon.Formatters
 import Argon.Types
 
 
@@ -25,8 +25,9 @@ filterResults o (s, Right rs) =
 
 -- | Export analysis' results. How to export the data is defined by the
 --   'ResultsOptions'.
-export :: ResultsOptions -> (FilePath, AnalysisResult) -> String
+export :: ResultsOptions -> [(FilePath, AnalysisResult)] -> String
 export opts rs =
     case outputMode opts of
         BareText -> bareTextFormatter rs
         Colored  -> coloredTextFormatter rs
+        JSON     -> jsonFormatter rs

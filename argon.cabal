@@ -27,6 +27,8 @@ library
                      , uniplate         ==1.6.*
                      , ansi-terminal    ==0.6.*
                      , docopt           ==0.7.*
+                     , aeson            ==0.8.*
+                     , bytestring       ==0.10.*
   default-language:    Haskell2010
   ghc-options:         -Wall
 
@@ -40,6 +42,8 @@ executable argon
                      , uniplate         ==1.6.*
                      , ansi-terminal    ==0.6.*
                      , docopt           ==0.7.*
+                     , aeson            ==0.8.*
+                     , bytestring       ==0.10.*
                      , argon            -any
   default-language:    Haskell2010
   ghc-options:         -Wall
@@ -56,6 +60,8 @@ test-suite argon-test
                      , cpphs            ==1.19.*
                      , uniplate         ==1.6.*
                      , ansi-terminal    ==0.6.*
+                     , aeson            ==0.8.*
+                     , bytestring       ==0.10.*
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
   other-modules:       Argon
