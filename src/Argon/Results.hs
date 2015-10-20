@@ -15,7 +15,7 @@ order :: [ComplexityBlock] -> [ComplexityBlock]
 order = sortOn (\(l, _, f, cc) -> (-cc, l, f))
 
 -- | Filter the results of the analysis, with respect to the given
---   'ResultsOptions'
+--   'ResultsOptions'.
 filterResults :: ResultsOptions
               -> (FilePath, AnalysisResult)
               -> (FilePath, AnalysisResult)

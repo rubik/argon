@@ -10,7 +10,7 @@ import Data.Aeson
 
 
 -- | Hold the data associated to a function binding:
---   (line number, column, function name, complexity)
+--   (line number, column, function name, complexity).
 type ComplexityBlock = (Int, Int, String, Int)
 
 instance ToJSON ComplexityBlock where
@@ -35,15 +35,15 @@ instance ToJSON (FilePath, AnalysisResult) where
                                   , "blocks" .= rs
                                   ]
 
--- | Type holding all the options passed from the command line
+-- | Type holding all the options passed from the command line.
 data ResultsOptions = ResultsOptions {
-    -- | Minimum complexity a block has to have to be shown in results
+    -- | Minimum complexity a block has to have to be shown in results.
     minCC :: Int
-    -- | Describe how the results should be exported
+    -- | Describe how the results should be exported.
   , outputMode :: OutputMode
   }
 
--- | Type describing how the results should be exported
-data OutputMode = BareText -- ^ Text-only output, no colors
-                | Colored  -- ^ Text-only output, with colors
-                | JSON     -- ^ Data is serialized to JSON
+-- | Type describing how the results should be exported.
+data OutputMode = BareText -- ^ Text-only output, no colors.
+                | Colored  -- ^ Text-only output, with colors.
+                | JSON     -- ^ Data is serialized to JSON.
