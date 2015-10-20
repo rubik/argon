@@ -45,7 +45,7 @@ handleExc helper = return . helper . show
 
 -- | Parse the given code and compute cyclomatic complexity for every function
 --   binding.
-parseCode :: Maybe String -- ^ The filename of the source code
+parseCode :: Maybe String -- ^ The filename corresponding to the source code
           -> String       -- ^ The source code
           -> IO (FilePath, AnalysisResult)
 parseCode m source = do
