@@ -25,26 +25,13 @@ before_install:
     #packages:
       #- libgmp-dev
 
-matrix:
-  include:
-  - env: GHCVER=7.8.4 STACK_YAML=stack.yaml
-    addons:
-      apt:
-        sources:
-        - hvr-ghc
-        packages:
-        - ghc-7.8.4
-  - env: GHCVER=7.10.1 STACK_YAML=stack.yaml
-    addons:
-      apt:
-        sources:
-        - hvr-ghc
-        packages:
-        - ghc-7.10.1
+env:
+  GHCVER=7.8.4 STACK_YAML=stack.yaml
+  GHCVER=7.10.1 STACK_YAML=stack.yaml
 
 install:
   - stack setup --no-terminal
-  - stack build --only-snapshot --no-terminal
+  - stack build --no-terminal
 
 script:
-  - stack +RTS -N2 -RTS test :argon-test --no-terminal
+  - stack test :argon-test --no-terminal
