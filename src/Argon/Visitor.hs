@@ -7,6 +7,7 @@ import Language.Haskell.Exts.Syntax
 import Argon.Types (ComplexityBlock)
 
 
+-- | Compute cyclomatic complexity of every function binding in the given AST.
 funcsCC :: Data from => from -> [ComplexityBlock]
 funcsCC ast = map funCC [matches | FunBind matches <- universeBi ast]
 

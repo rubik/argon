@@ -12,9 +12,14 @@ type ComplexityBlock = (Int, Int, String, Int)
 --   'ComplexityBlock's.
 type AnalysisResult = Either String [ComplexityBlock]
 
+-- | Type holding all the options passed from the command line
 data ResultsOptions = ResultsOptions {
+    -- | Minimum complexity a block has to have to be shown in results
     minCC :: Int
+    -- | Describe how the results should be exported
   , outputMode :: OutputMode
   }
 
-data OutputMode = BareText | Colored
+-- | Type describing how the results should be exported
+data OutputMode = BareText -- ^ Text-only output, no colors
+                | Colored  -- ^ Text-only output, with colors
