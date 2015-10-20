@@ -5,16 +5,6 @@
 </h1>
 
 <p align="center">
-    Argon measures your code's cyclomatic complexity.
-</p>
-
-<img alt="Argon screenshot"
-     align="center"
-     src="https://cloud.githubusercontent.com/assets/238549/10623810/b91bff12-7792-11e5-8f86-af7ec4e98579.png">
-
-<hr>
-
-<p align="center">
     <a href="https://travis-ci.org/rubik/argon">
         <img alt="Tests"
              src="https://img.shields.io/travis/rubik/argon.svg?style=flat-square">
@@ -23,6 +13,15 @@
         <img alt="Version"
              src="https://img.shields.io/hackage/v/argon.svg?label=version&amp;style=flat-square">
     </a>
+</p>
+
+<p align="center">
+    Argon measures your code's cyclomatic complexity.
+</p>
+
+<p align="center">
+    <img alt="Argon screenshot"
+         src="https://cloud.githubusercontent.com/assets/238549/10623810/b91bff12-7792-11e5-8f86-af7ec4e98579.png">
 </p>
 
 <hr>
