@@ -1,8 +1,8 @@
 name:                argon
 version:             0.1.0.0
-synopsis:            Initial project template from stack
-description:         Please see README.md
-homepage:            http://github.com/rubik/argon#readme
+synopsis:            Measure your code's complexity
+homepage:            http://github.com/rubik/argon
+bug-reports:         http://github.com/rubik/argon/issues
 license:             ISC
 license-file:        LICENSE
 author:              Michele Lacchia
@@ -10,8 +10,14 @@ maintainer:          michelelacchia@gmail.com
 copyright:           2015 Michele Lacchia
 category:            Web
 build-type:          Simple
--- extra-source-files:
 cabal-version:       >=1.10
+description:
+    Argon performs static analysis on your code in order to compute cyclomatic
+    complexity. It is a quantitative measure of the number of linearly
+    indipendent paths through the code.
+    .
+    The intended usage is through Argon's executable, which accepts a list of
+    file paths to analyze. The data can be optionally exported to JSON.
 
 library
   hs-source-dirs:      src
