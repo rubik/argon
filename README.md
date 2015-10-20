@@ -13,6 +13,10 @@
         <img alt="Version"
              src="https://img.shields.io/hackage/v/argon.svg?label=version&amp;style=flat-square">
     </a>
+    <a href="https://travis-ci.org/rubik/argon/blob/master/LICENSE">
+        <img alt="License"
+             src="https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square">
+    </a>
 </p>
 
 <p align="center">
