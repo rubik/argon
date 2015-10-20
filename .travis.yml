@@ -43,8 +43,8 @@ matrix:
         - ghc-7.10.1
 
 install:
-  - stack +RTS -N2 -RTS setup --no-terminal
-  - stack +RTS -N2 -RTS build --only-snapshot --no-terminal
+  - stack setup --no-terminal
+  - stack build --only-snapshot --no-terminal
 
 script:
   - stack +RTS -N2 -RTS test :argon-test --no-terminal
