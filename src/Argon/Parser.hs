@@ -2,6 +2,7 @@ module Argon.Parser (parseCode)
     where
 
 import Data.Maybe (fromMaybe)
+import Control.Applicative ((<$>))
 import Control.Exception (SomeException, evaluate, catch)
 import Language.Haskell.Exts
 import Language.Haskell.Exts.SrcLoc (noLoc)
