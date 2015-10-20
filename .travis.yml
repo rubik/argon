@@ -1,5 +1,6 @@
 language: haskell
 
+language: haskell
 branches:
   only:
     - master
