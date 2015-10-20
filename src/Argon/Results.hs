@@ -7,6 +7,7 @@ import Argon.Types
 
 
 -- | Order a list of blocks. Ordering is done with respect to:
+--
 --     1. complexity (descending)
 --     2. line number (ascending)
 --     3. function name (alphabetically)
