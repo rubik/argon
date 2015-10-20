@@ -1,7 +1,7 @@
-module Argon (AnalysisResult, parseCode, filterResults, formatResult)
+module Argon (AnalysisResult, ComplexityBlock, ResultsOptions(..)
+             , OutputMode(..) , parseCode, order, filterResults, export)
     where
 
 import Argon.Parser (parseCode)
-import Argon.Results (filterResults)
-import Argon.Pretty (formatResult)
-import Argon.Types (AnalysisResult)
+import Argon.Results (order, export, filterResults)
+import Argon.Types

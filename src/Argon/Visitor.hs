@@ -4,13 +4,13 @@ module Argon.Visitor (funcsCC)
 import Data.Data (Data)
 import Data.Generics.Uniplate.Data (childrenBi, universeBi)
 import Language.Haskell.Exts.Syntax
-import Argon.Types (ComplexityResult)
+import Argon.Types (ComplexityBlock)
 
 
-funcsCC :: Data from => from -> [ComplexityResult]
+funcsCC :: Data from => from -> [ComplexityBlock]
 funcsCC ast = map funCC [matches | FunBind matches <- universeBi ast]
 
-funCC :: [Match] -> ComplexityResult
+funCC :: [Match] -> ComplexityBlock
 funCC [] = (0, 0, "<unknown>", 0)
 funCC ms@(Match (SrcLoc _ l c) n _ _ _ _:_) = (l, c, name n, complexity ms)
     where name (Ident s)   = s

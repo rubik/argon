@@ -5,8 +5,6 @@ import Data.Maybe (fromMaybe)
 import Control.Exception (SomeException, evaluate, catch)
 import Language.Haskell.Exts
 import Language.Haskell.Exts.SrcLoc (noLoc)
-import Language.Haskell.Exts.Parser (ParseMode(..), defaultParseMode
-                                    , parseModuleWithMode)
 import Language.Preprocessor.Cpphs
 import Argon.Visitor (funcsCC)
 import Argon.Types (AnalysisResult)
@@ -42,17 +40,21 @@ cppHsOpts = defaultCpphsOptions {
                            }
             }
 
-handleException :: (String -> ParseResult a) -> SomeException -> IO (ParseResult a)
-handleException helper = return . helper . show
+handleExc:: (String -> ParseResult a) -> SomeException -> IO (ParseResult a)
+handleExc helper = return . helper . show
 
-parseCode :: Maybe String -> String -> IO (FilePath, AnalysisResult)
+-- | Parse the given code and compute cyclomatic complexity for every function
+--   binding.
+parseCode :: Maybe String -- ^ The filename of the source code
+          -> String       -- ^ The source code
+          -> IO (FilePath, AnalysisResult)
 parseCode m source = do
     let fname = fromMaybe "<unknown>.hs" m
     parsed <- (do
         result <- parseModuleWithMode argonMode <$>
             runCpphs cppHsOpts fname source
-        evaluate result) `catch` handleException (ParseFailed noLoc)
+        evaluate result) `catch` handleExc (ParseFailed noLoc)
     let res = case parsed of
-                ParseOk mod       -> Right $ funcsCC mod
+                ParseOk moduleAst -> Right $ funcsCC moduleAst
                 ParseFailed _ msg -> Left msg
     return (fname, res)
