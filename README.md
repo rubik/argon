@@ -1,6 +1,25 @@
-## Argon
+<h1 align="center">
+    <a href="https://github.com/rubik/argon">
+        Argon
+    </a>
+</h1>
 
-Argon measures cyclomatic complexity in your Haskell code.
+<p align="center">
+    Argon measures your code's cyclomatic complexity.
+</p>
+
+<p align="center">
+    <a href="https://travis-ci.org/rubik/argon">
+        <img alt="Tests"
+             src="https://img.shields.io/travis/rubik/argon.svg?style=flat-square">
+    </a>
+    <a href="https://hackage.haskell.org/package/argon">
+        <img alt="Version"
+             src="https://img.shields.io/hackage/v/argon.svg?label=version&amp;style=flat-square">
+    </a>
+</p>
+
+<hr>
 
 ### Installing
 
