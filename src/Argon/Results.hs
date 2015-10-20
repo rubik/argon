@@ -1,10 +1,16 @@
 module Argon.Results (order, filterResults, export)
     where
 
-import Data.List (sortOn)
+import Data.Ord (comparing)
+import Data.List (sortBy)
 import Argon.Formatters
 import Argon.Types
 
+
+-- sortOn is built-in only in base 4.8.0.0 onwards
+sortOn :: Ord b => (a -> b) -> [a] -> [a]
+sortOn f =
+  map snd . sortBy (comparing fst) . map (\x -> let y = f x in y `seq` (y, x))
 
 -- | Order a list of blocks. Ordering is done with respect to:
 --

@@ -1,6 +1,8 @@
 language: haskell
 
-language: haskell
+env:
+  - GHCVER=7.8.4 STACK_YAML=stack-ghc-7.8.4.yaml
+  - GHCVER=7.10.1 STACK_YAML=stack.yaml
 branches:
   only:
     - master
@@ -12,22 +14,10 @@ cache:
     - $HOME/.stack/
 
 before_install:
-  # ghc
-  - export PATH=/opt/ghc/$GHCVER/bin:$PATH
-  # stack
   - mkdir -p $HOME/.local/bin
   - export PATH=$HOME/.local/bin:$PATH
   - travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v0.1.4.0/stack-0.1.4.0-x86_64-linux.tar.gz | tar xz -C $HOME/.local/bin
   - chmod a+x $HOME/.local/bin/stack
-
-#addons:
-  #apt:
-    #packages:
-      #- libgmp-dev
-
-env:
-  - GHCVER=7.8.4 STACK_YAML=stack-ghc-7.8.4.yaml
-  - GHCVER=7.10.1 STACK_YAML=stack.yaml
 
 install:
   - stack setup --no-terminal
