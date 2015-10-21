@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Argon.Types (ComplexityBlock, AnalysisResult, ResultsOptions(..)
+module Argon.Types (ComplexityBlock, AnalysisResult, Config(..)
                    , OutputMode(..))
     where
 
@@ -36,7 +36,7 @@ instance ToJSON (FilePath, AnalysisResult) where
                                   ]
 
 -- | Type holding all the options passed from the command line.
-data ResultsOptions = ResultsOptions {
+data Config = Config {
     -- | Minimum complexity a block has to have to be shown in results.
     minCC :: Int
     -- | Describe how the results should be exported.

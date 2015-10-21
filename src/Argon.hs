@@ -13,7 +13,7 @@ module Argon
       AnalysisResult
     , ComplexityBlock
     , OutputMode(..)
-    , ResultsOptions(..)
+    , Config(..)
     -- * Parsing
     , parseCode
     -- * Manipulating results

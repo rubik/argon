@@ -22,7 +22,7 @@ order = sortOn (\(l, _, f, cc) -> (-cc, l, f))
 
 -- | Filter the results of the analysis, with respect to the given
 --   'ResultsOptions'.
-filterResults :: ResultsOptions
+filterResults :: Config
               -> (FilePath, AnalysisResult)
               -> (FilePath, AnalysisResult)
 filterResults _ (s, Left msg) = (s, Left msg)
@@ -31,7 +31,7 @@ filterResults o (s, Right rs) =
 
 -- | Export analysis' results. How to export the data is defined by the
 --   'ResultsOptions'.
-export :: ResultsOptions -> [(FilePath, AnalysisResult)] -> String
+export :: Config -> [(FilePath, AnalysisResult)] -> String
 export opts rs =
     case outputMode opts of
         BareText -> bareTextFormatter rs

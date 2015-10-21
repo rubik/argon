@@ -1,14 +1,17 @@
+{-# LANGUAGE CPP #-}
 module Argon.Parser (parseCode)
     where
 
 import Data.Maybe (fromMaybe)
-import Control.Applicative ((<$>))
 import Control.Exception (SomeException, evaluate, catch)
 import Language.Haskell.Exts
 import Language.Haskell.Exts.SrcLoc (noLoc)
 import Language.Preprocessor.Cpphs
 import Argon.Visitor (funcsCC)
 import Argon.Types (AnalysisResult)
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative ((<$>))
+#endif
 
 
 -- Very permissive extension set
