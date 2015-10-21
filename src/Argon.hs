@@ -11,7 +11,7 @@ module Argon
     (
     -- * Types
       AnalysisResult
-    , ComplexityBlock
+    , ComplexityBlock(CC)
     , OutputMode(..)
     , Config(..)
     -- * Parsing

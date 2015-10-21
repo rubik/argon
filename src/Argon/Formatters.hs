@@ -14,14 +14,14 @@ bareTextFormatter :: [(FilePath, AnalysisResult)] -> String
 bareTextFormatter = formatSingle $ formatResult
     (printf "%s\n\t%s")
     (\e -> "error:" ++ e)
-    (\(l, c, func, cc) -> printf "%d:%d %s - %d" l c func cc)
+    (\(CC (l, c, func, cc)) -> printf "%d:%d %s - %d" l c func cc)
 
 coloredTextFormatter :: [(FilePath, AnalysisResult)] -> String
 coloredTextFormatter = formatSingle $ formatResult
     (\name rest -> printf "%s%s%s\n\t%s%s" open name reset rest reset)
     (\e -> printf "%serror%s: %s%s" (fore Red) reset e reset)
-    (\(l, c, func, cc) -> printf "%d:%d %s - %s%s" l c (coloredFunc func c)
-                            (coloredRank cc) reset)
+    (\(CC (l, c, func, cc)) -> printf "%d:%d %s - %s%s" l c (coloredFunc func c)
+                               (coloredRank cc) reset)
 
 jsonFormatter :: [(FilePath, AnalysisResult)] -> String
 jsonFormatter = B.unpack . encode

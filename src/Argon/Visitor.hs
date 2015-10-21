@@ -4,7 +4,7 @@ module Argon.Visitor (funcsCC)
 import Data.Data (Data)
 import Data.Generics.Uniplate.Data (childrenBi, universeBi)
 import Language.Haskell.Exts.Syntax
-import Argon.Types (ComplexityBlock)
+import Argon.Types (ComplexityBlock(..))
 
 
 -- | Compute cyclomatic complexity of every function binding in the given AST.
@@ -12,8 +12,8 @@ funcsCC :: Data from => from -> [ComplexityBlock]
 funcsCC ast = map funCC [matches | FunBind matches <- universeBi ast]
 
 funCC :: [Match] -> ComplexityBlock
-funCC [] = (0, 0, "<unknown>", 0)
-funCC ms@(Match (SrcLoc _ l c) n _ _ _ _:_) = (l, c, name n, complexity ms)
+funCC [] = CC (0, 0, "<unknown>", 0)
+funCC ms@(Match (SrcLoc _ l c) n _ _ _ _:_) = CC (l, c, name n, complexity ms)
     where name (Ident s)   = s
           name (Symbol s) = s
 

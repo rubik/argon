@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Argon.Types (ComplexityBlock, AnalysisResult, Config(..)
+module Argon.Types (ComplexityBlock(CC), AnalysisResult, Config(..)
                    , OutputMode(..))
     where
 
@@ -11,14 +11,15 @@ import Data.Aeson
 
 -- | Hold the data associated to a function binding:
 --   (line number, column, function name, complexity).
-type ComplexityBlock = (Int, Int, String, Int)
+newtype ComplexityBlock = CC (Int, Int, String, Int)
+                        deriving (Show, Eq, Ord)
 
 instance ToJSON ComplexityBlock where
-    toJSON (l, c, func, cc) = object [ "lineno"     .= l
-                                     , "col"        .= c
-                                     , "name"       .= func
-                                     , "complexity" .= cc
-                                     ]
+    toJSON (CC (l, c, func, cc)) = object [ "lineno"     .= l
+                                          , "col"        .= c
+                                          , "name"       .= func
+                                          , "complexity" .= cc
+                                          ]
 
 -- | Represent the result of the analysis of one file.
 --   It can either be an error message or a list of
