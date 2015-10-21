@@ -82,6 +82,7 @@ coomplexity score:
 
 Optionally, results can also be exported to JSON:
 
+    $ argon --json src/**/*.hs
     [
       {
         "blocks": [
