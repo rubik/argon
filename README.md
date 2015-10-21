@@ -9,13 +9,13 @@
         <img alt="Tests"
              src="https://img.shields.io/travis/rubik/argon.svg?style=flat-square">
     </a>
-    <a href="https://hackage.haskell.org/package/argon">
-        <img alt="Version"
-             src="https://img.shields.io/hackage/v/argon.svg?label=version&amp;style=flat-square">
-    </a>
     <a href="https://github.com/rubik/argon/blob/master/LICENSE">
         <img alt="License"
              src="https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square">
+    </a>
+    <a href="https://hackage.haskell.org/package/argon">
+        <img alt="Version"
+             src="https://img.shields.io/hackage/v/argon.svg?label=version&amp;style=flat-square">
     </a>
 </p>
 
