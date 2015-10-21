@@ -4,4 +4,5 @@ packages:
 - '.'
 extra-deps:
 - docopt-0.7.0.4
+- pathwalk-0.3.1.0
 resolver: lts-3.9
