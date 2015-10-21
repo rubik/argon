@@ -25,7 +25,7 @@
 
 <p align="center">
     <img alt="Argon screenshot"
-         src="https://cloud.githubusercontent.com/assets/238549/10630521/5a60346c-77d7-11e5-8e87-373bec72e777.png">
+         src="https://cloud.githubusercontent.com/assets/238549/10644166/5a0f5efc-7827-11e5-9b29-6e7bcccb2345.png">
 </p>
 
 <hr>
@@ -80,7 +80,7 @@ coomplexity score:
 
 #### JSON
 
-Optionally, results can also be exported to JSON:
+Results can also be exported to JSON:
 
     $ argon --json src/**/*.hs
     [
