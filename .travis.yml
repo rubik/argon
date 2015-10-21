@@ -1,5 +1,3 @@
-language: haskell
-
 env:
   - GHCVER=7.8.4 STACK_YAML=stack-ghc-7.8.4.yaml
   - GHCVER=7.10.1 STACK_YAML=stack.yaml
