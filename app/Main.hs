@@ -48,8 +48,8 @@ descend path = do
 allFiles :: [FilePath] -> IO (Seq FilePath)
 allFiles paths = foldl1' mappend <$> mapM descend paths
 
-readConfig :: Arguments -> IO Config
-readConfig args = return
+readConfig :: Arguments -> Config
+readConfig args =
     Config {
       minCC      = read $ getOpt args "1" "min"
     , outputMode = if args `isPresent` longOption "json"
@@ -64,5 +64,5 @@ main = do
     args <- parseArgsOrExit patterns =<< getArgs
     ins  <- allFiles $ args `getAllArgs` argument "paths"
     res  <- mapM processFile $ toList ins
-    conf <- readConfig args
+    let conf = readConfig args
     putStr $ export conf $ map (filterResults conf) res
