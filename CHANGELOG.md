@@ -2,7 +2,11 @@
 
 This package uses [Semantic Versioning][1].
 
-## v0.0.1.0
+## v0.2.0.0
+
+- Add `USAGE.txt` to tarball: #2
+
+## v0.1.0.0
 
 -   Initially created.
 

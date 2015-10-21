@@ -1,5 +1,5 @@
 name:                argon
-version:             0.1.0.0
+version:             0.2.0.0
 synopsis:            Measure your code's complexity
 homepage:            http://github.com/rubik/argon
 bug-reports:         http://github.com/rubik/argon/issues
@@ -18,6 +18,11 @@ description:
     .
     The intended usage is through Argon's executable, which accepts a list of
     file paths to analyze. The data can be optionally exported to JSON.
+extra-source-files:
+    stack.yaml
+    README.md
+    CHANGELOG.md
+    USAGE.txt
 
 library
   hs-source-dirs:      src
