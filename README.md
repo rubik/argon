@@ -32,7 +32,7 @@
 
 ### Installing
 
-Simple as ``stack install`` or ``cabal install``.
+Simple as ``stack install argon`` or ``cabal install argon``.
 
 ### Running
 
