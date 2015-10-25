@@ -36,6 +36,7 @@ getFuncName :: Function -> String
 getFuncName = GHC.occNameString . GHC.rdrNameOcc . GHC.unLoc . fst . fromJust
             . GHC.m_fun_id_infix . GHC.unLoc . head . getMatches
 
+-- XXX: does not work
 complexity :: Function -> Int
 complexity f = let matches = getMatches f
                    query = everything (+) $ 0 `mkQ` visitExp `extQ` visitOp
