@@ -1,8 +1,7 @@
 module Argon.Visitor (funcsCC)
     where
 
-import Data.Maybe (fromJust)
-import Data.Generics (Data, Typeable, everything, mkQ, extQ)
+import Data.Generics (Data, Typeable, everything, mkQ)
 import Control.Arrow ((&&&))
 
 import qualified GHC
@@ -32,10 +31,10 @@ getBinds = everything (++) $ mkQ [] visit
 getLocation :: GHC.Located a -> Span
 getLocation = srcSpanToSpan . GHC.getLoc
 
--- TODO: make it safe
 getFuncName :: Function -> String
-getFuncName = GHC.occNameString . GHC.rdrNameOcc . GHC.unLoc . fst . fromJust
-            . GHC.m_fun_id_infix . GHC.unLoc . head . getMatches
+getFuncName f = case GHC.m_fun_id_infix . GHC.unLoc . head $ getMatches f of
+                  Just name -> getName . GHC.unLoc $ fst name
+                  Nothing   -> "<unknown>"
 
 -- XXX: does not work
 complexity :: Function -> Int
@@ -47,6 +46,9 @@ complexity f = let matches = getMatches f
 getMatches :: Function -> [GHC.LMatch GHC.RdrName MatchBody]
 getMatches = GHC.mg_alts . GHC.fun_matches
 
+getName :: GHC.RdrName -> String
+getName = GHC.occNameString . GHC.rdrNameOcc
+
 sumWith :: (a -> Int) -> [a] -> Int
 sumWith f = sum . map f
 
@@ -57,8 +59,12 @@ visitExp (GHC.HsLamCase _ alts) = length (GHC.mg_alts alts) - 1
 visitExp (GHC.HsCase _ alts)    = length (GHC.mg_alts alts) - 1
 visitExp _ = 0
 
--- TODO: add implementation
 visitOp :: Exp -> Int
+visitOp (GHC.OpApp _ (GHC.L _ (GHC.HsVar op)) _ _) =
+    case getName op of
+      "||" -> 1
+      "&&" -> 1
+      _    -> 0
 visitOp _ = 0
 
 -- XXX: Is it really worth it?
