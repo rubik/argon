@@ -29,11 +29,6 @@ getOpt args def opt = getArgWithDefault args def $ longOption opt
 haskellFiles :: Seq FilePath -> Seq FilePath
 haskellFiles = S.filter (".hs" `isSuffixOf`)
 
-processFile :: FilePath -> IO (FilePath, AnalysisResult)
-processFile path = do
-    contents <- readFile path
-    parseCode (Just path) contents
-
 findSourceFiles :: FilePath -> IO (Seq FilePath)
 findSourceFiles path =
     pathWalkAccumulate path $ \dir _ files ->
@@ -63,6 +58,6 @@ main :: IO ()
 main = do
     args <- parseArgsOrExit patterns =<< getArgs
     ins  <- allFiles $ args `getAllArgs` argument "paths"
-    res  <- mapM processFile $ toList ins
+    res  <- mapM parseCode $ toList ins
     let conf = readConfig args
     putStr $ export conf $ map (filterResults conf) res

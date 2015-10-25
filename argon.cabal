@@ -32,13 +32,15 @@ library
                        Argon.Results
                        Argon.Formatters
                        Argon.Types
+                       Argon.Preprocess
+                       Argon.Utils
   build-depends:       base             >=4.7    && <5
-                     , haskell-src-exts ==1.16.*
-                     , cpphs            ==1.19.*
-                     , uniplate         ==1.6.*
                      , ansi-terminal    ==0.6.*
                      , aeson            ==0.8.*
                      , bytestring       ==0.10.*
+                     , ghc              -any
+                     , ghc-paths        ==0.1.*
+                     , syb
   default-language:    Haskell2010
   ghc-options:         -Wall
 
@@ -64,12 +66,12 @@ test-suite argon-test
                      , argon            -any
                      , hspec            ==2.1.*
                      , QuickCheck       -any
-                     , haskell-src-exts ==1.16.*
-                     , cpphs            ==1.19.*
-                     , uniplate         ==1.6.*
                      , ansi-terminal    ==0.6.*
                      , aeson            ==0.8.*
                      , bytestring       ==0.10.*
+                     , ghc              -any
+                     , ghc-paths        ==0.1.*
+                     , syb
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
   other-modules:       Argon
@@ -79,6 +81,8 @@ test-suite argon-test
                        Argon.Results
                        Argon.Formatters
                        Argon.Types
+                       Argon.Preprocess
+                       Argon.Utils
 
 test-suite style
   type:                exitcode-stdio-1.0

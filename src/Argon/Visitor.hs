@@ -1,48 +1,63 @@
 module Argon.Visitor (funcsCC)
     where
 
-import Data.Data (Data)
-import Data.Generics.Uniplate.Data (childrenBi, universeBi)
-import Language.Haskell.Exts.Syntax
-import Argon.Types (ComplexityBlock(..))
+import Data.Maybe (fromJust)
+import Data.Generics (Data, Typeable, everything, mkQ, extQ)
+
+import qualified GHC
+import qualified RdrName as GHC
+import qualified OccName as GHC
+
+import Argon.Utils
+import Argon.Types (Span, ComplexityBlock(..))
+
+type Exp = GHC.HsExpr GHC.RdrName
+type Function = GHC.HsBindLR GHC.RdrName GHC.RdrName
+type MatchBody = GHC.LHsExpr GHC.RdrName
 
 
 -- | Compute cyclomatic complexity of every function binding in the given AST.
-funcsCC :: Data from => from -> [ComplexityBlock]
-funcsCC ast = map funCC [matches | FunBind matches <- universeBi ast]
+funcsCC :: (Data from, Typeable from) => from -> [ComplexityBlock]
+funcsCC = map funCC . getBinds
 
-funCC :: [Match] -> ComplexityBlock
-funCC [] = CC (0, 0, "<unknown>", 0)
-funCC ms@(Match (SrcLoc _ l c) n _ _ _ _:_) = CC (l, c, name n, complexity ms)
-    where name (Ident s)   = s
-          name (Symbol s) = s
+funCC :: Function -> ComplexityBlock
+funCC f = CC (getLocation $ GHC.fun_id f, getFuncName f, complexity f)
+
+getBinds :: (Data from, Typeable from) => from -> [Function]
+getBinds = everything (++) $ mkQ [] visit
+    where visit fun@(GHC.FunBind {}) = [fun]
+          visit _ = []
+
+getLocation :: GHC.Located a -> Span
+getLocation = srcSpanToSpan . GHC.getLoc
+
+-- TODO: make it safe
+getFuncName :: Function -> String
+getFuncName = GHC.occNameString . GHC.rdrNameOcc . GHC.unLoc . fst . fromJust
+            . GHC.m_fun_id_infix . GHC.unLoc . head . getMatches
+
+complexity :: Function -> Int
+complexity f = let matches = getMatches f
+                   query = everything (+) $ 0 `mkQ` visitExp `extQ` visitOp
+                in length matches + sumWith query matches
+
+getMatches :: Function -> [GHC.LMatch GHC.RdrName MatchBody]
+getMatches = GHC.mg_alts . GHC.fun_matches
 
 sumWith :: (a -> Int) -> [a] -> Int
 sumWith f = sum . map f
 
-complexity :: Data from => from -> Int
-complexity node = 1 + visitMatches node + visitExps node
-
-visitMatches :: Data from => from -> Int
-visitMatches = sumWith descend . childrenBi
-    where descend :: [Match] -> Int
-          descend x = length x - 1 + sumWith visitMatches x
-
-visitExps :: Data from => from -> Int
-visitExps = sumWith inspect . universeBi
-    where inspect e = visitExp e + visitOp e
-
 visitExp :: Exp -> Int
-visitExp (If {})        = 1
-visitExp (MultiIf alts) = length alts - 1
-visitExp (Case _ alts)  = length alts - 1
-visitExp (LCase alts)   = length alts - 1
+visitExp (GHC.HsIf {}) = 1
+visitExp (GHC.HsMultiIf _ alts) = length alts - 1
+visitExp (GHC.HsLamCase _ alts) = length (GHC.mg_alts alts) - 1
+visitExp (GHC.HsCase _ alts)    = length (GHC.mg_alts alts) - 1
 visitExp _ = 0
 
+-- TODO: add implementation
 visitOp :: Exp -> Int
-visitOp (InfixApp _ (QVarOp (UnQual (Symbol op))) _) =
-  case op of
-    "||" -> 1
-    "&&" -> 1
-    _    -> 0
 visitOp _ = 0
+
+-- XXX: Is it really worth it?
+isFunction :: Function -> Bool
+isFunction f = True  -- TODO: find a way to recognize if a bind is a function

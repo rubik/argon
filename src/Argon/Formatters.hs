@@ -8,20 +8,22 @@ import qualified Data.ByteString.Lazy.Char8 as B
 import Data.List (intercalate)
 import System.Console.ANSI
 import Argon.Types
+import Argon.Utils
 
 
 bareTextFormatter :: [(FilePath, AnalysisResult)] -> String
 bareTextFormatter = formatSingle $ formatResult
     (printf "%s\n\t%s")
     (\e -> "error:" ++ e)
-    (\(CC (l, c, func, cc)) -> printf "%d:%d %s - %d" l c func cc)
+    (\(CC (l, func, cc)) -> printf "%s %s - %d" (spanToString l) func cc)
 
 coloredTextFormatter :: [(FilePath, AnalysisResult)] -> String
 coloredTextFormatter = formatSingle $ formatResult
     (\name rest -> printf "%s%s%s\n\t%s%s" open name reset rest reset)
     (\e -> printf "%serror%s: %s%s" (fore Red) reset e reset)
-    (\(CC (l, c, func, cc)) -> printf "%d:%d %s - %s%s" l c (coloredFunc func c)
-                               (coloredRank cc) reset)
+    (\(CC (l, func, cc)) -> printf "%s %s - %s%s" (spanToString l)
+                                                  (coloredFunc func l)
+                                                  (coloredRank cc) reset)
 
 jsonFormatter :: [(FilePath, AnalysisResult)] -> String
 jsonFormatter = B.unpack . encode
@@ -35,8 +37,8 @@ fore color = setSGRCode [SetColor Foreground Dull color]
 reset :: String
 reset = setSGRCode []
 
-coloredFunc :: String -> Int -> String
-coloredFunc f c = fore color ++ f ++ reset
+coloredFunc :: String -> Span -> String
+coloredFunc f (_, c, _, _) = fore color ++ f ++ reset
     where color = if c == 1 then Cyan else Magenta
 
 coloredRank :: Int -> String

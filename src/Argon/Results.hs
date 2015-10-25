@@ -18,7 +18,7 @@ sortOn f =
 --     2. line number (ascending)
 --     3. function name (alphabetically)
 order :: [ComplexityBlock] -> [ComplexityBlock]
-order = sortOn (\(CC (l, _, f, cc)) -> (-cc, l, f))
+order = sortOn (\(CC ((l, _, _, _), f, cc)) -> (-cc, l, f))
 
 -- | Filter the results of the analysis, with respect to the given
 --   'ResultsOptions'.
@@ -27,7 +27,7 @@ filterResults :: Config
               -> (FilePath, AnalysisResult)
 filterResults _ (s, Left msg) = (s, Left msg)
 filterResults o (s, Right rs) =
-    (s, Right $ order [r | r@(CC (_, _, _, cc)) <- rs, cc >= minCC o])
+    (s, Right $ order [r | r@(CC (_, _, cc)) <- rs, cc >= minCC o])
 
 -- | Export analysis' results. How to export the data is defined by the
 --   'ResultsOptions'.
