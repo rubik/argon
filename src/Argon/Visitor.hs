@@ -3,6 +3,7 @@ module Argon.Visitor (funcsCC)
 
 import Data.Maybe (fromJust)
 import Data.Generics (Data, Typeable, everything, mkQ, extQ)
+import Control.Arrow ((&&&))
 
 import qualified GHC
 import qualified RdrName as GHC
@@ -39,7 +40,8 @@ getFuncName = GHC.occNameString . GHC.rdrNameOcc . GHC.unLoc . fst . fromJust
 -- XXX: does not work
 complexity :: Function -> Int
 complexity f = let matches = getMatches f
-                   query = everything (+) $ 0 `mkQ` visitExp `extQ` visitOp
+                   query = everything (+) $ 0 `mkQ` visit
+                   visit = uncurry (+) . (visitExp &&& visitOp)
                 in length matches + sumWith query matches
 
 getMatches :: Function -> [GHC.LMatch GHC.RdrName MatchBody]
