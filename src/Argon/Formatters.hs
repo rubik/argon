@@ -58,8 +58,8 @@ formatResult :: (String -> String -> String)  -- ^ The block formatter
              -> (String -> String)            -- ^ The error formatter
              -> (ComplexityBlock -> String)   -- ^ The single line formatter
              -> (FilePath, AnalysisResult) -> String
-formatResult resultBlock errorF _ (name, Left msg) =
-    resultBlock name $ errorF msg
+formatResult resultBlock errorF _ (name, Left err) =
+    resultBlock name $ errorF err
 formatResult _ _ _ (_,    Right []) = ""
 formatResult resultBlock _ singleF (name, Right rs) =
     resultBlock name $ intercalate "\n\t" $ map singleF rs

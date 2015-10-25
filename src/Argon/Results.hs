@@ -25,7 +25,7 @@ order = sortOn (\(CC ((l, _, _, _), f, cc)) -> (-cc, l, f))
 filterResults :: Config
               -> (FilePath, AnalysisResult)
               -> (FilePath, AnalysisResult)
-filterResults _ (s, Left msg) = (s, Left msg)
+filterResults _ (s, Left err) = (s, Left err)
 filterResults o (s, Right rs) =
     (s, Right $ order [r | r@(CC (_, _, cc)) <- rs, cc >= minCC o])
 

@@ -36,7 +36,6 @@ getFuncName f = case GHC.m_fun_id_infix . GHC.unLoc . head $ getMatches f of
                   Just name -> getName . GHC.unLoc $ fst name
                   Nothing   -> "<unknown>"
 
--- XXX: does not work
 complexity :: Function -> Int
 complexity f = let matches = getMatches f
                    query = everything (+) $ 0 `mkQ` visit
@@ -66,7 +65,3 @@ visitOp (GHC.OpApp _ (GHC.L _ (GHC.HsVar op)) _ _) =
       "&&" -> 1
       _    -> 0
 visitOp _ = 0
-
--- XXX: Is it really worth it?
-isFunction :: Function -> Bool
-isFunction f = True  -- TODO: find a way to recognize if a bind is a function
