@@ -85,10 +85,10 @@ initDynFlags file = do
     return dflags2
 
 customLogAction :: GHC.LogAction
-customLogAction dflags severity srcSpan _ msg =
+customLogAction dflags severity srcSpan _ m =
     case severity of
       GHC.SevFatal -> throwError
       GHC.SevError -> throwError
       _            -> return ()
     where throwError = E.throwIO $ GhcParseError (srcSpanToSpan srcSpan)
-                                                 (GHC.showSDoc dflags msg)
+                                                 (GHC.showSDoc dflags m)

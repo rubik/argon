@@ -7,10 +7,12 @@ module Argon.Types (ComplexityBlock(CC), AnalysisResult, Config(..)
     where
 
 import Prelude hiding (span)
-import Control.Exception (Exception)
-import Argon.Span
+import Data.List (intercalate)
 import Data.Aeson
 import Data.Typeable
+import Control.Exception (Exception)
+
+import Argon.Span
 
 
 data GhcParseError = GhcParseError {
@@ -44,7 +46,8 @@ data OutputMode = BareText -- ^ Text-only output, no colors.
 instance Exception GhcParseError
 
 instance Show GhcParseError where
-    show e = tagMsg (span e) (msg e)
+    show e = tagMsg (span e) $ fixNewlines (msg e)
+        where fixNewlines = intercalate "\n\t\t" . lines
 
 instance ToJSON ComplexityBlock where
     toJSON (CC ((s, c, e, _), func, cc)) =
