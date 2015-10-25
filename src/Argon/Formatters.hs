@@ -2,13 +2,14 @@ module Argon.Formatters (bareTextFormatter, coloredTextFormatter
                         , jsonFormatter)
     where
 
-import Text.Printf (printf)
 import Data.Aeson (encode)
 import qualified Data.ByteString.Lazy.Char8 as B
 import Data.List (intercalate)
+import Text.Printf (printf)
 import System.Console.ANSI
+
 import Argon.Types
-import Argon.Utils
+import Argon.Span
 
 
 bareTextFormatter :: [(FilePath, AnalysisResult)] -> String

@@ -1,10 +1,11 @@
-module Argon.Utils (srcSpanToSpan, spanToString)
+module Argon.Span (Span, srcSpanToSpan, spanToString, tagMsg)
     where
 
 import Text.Printf (printf)
 import Control.Arrow ((&&&))
 import qualified SrcLoc as GHC
-import Argon.Types (Span)
+
+type Span = (Int, Int, Int, Int)
 
 
 srcSpanToSpan :: GHC.SrcSpan -> Span
@@ -15,3 +16,6 @@ srcSpanToSpan ss = (sl, sc, el, ec)
 
 spanToString :: Span -> String
 spanToString (l, c, _, _) = printf "%d:%d" l c
+
+tagMsg :: Span -> String -> String
+tagMsg s msg = spanToString s ++ " " ++ msg

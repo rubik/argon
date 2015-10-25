@@ -2,11 +2,13 @@
 module Argon.Parser (parseCode)
     where
 
+import Prelude hiding (span)
 import Control.Monad (void)
 import qualified Control.Exception as E
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative ((<$>))
 #endif
+
 import qualified GHC hiding (parseModule)
 import qualified SrcLoc       as GHC
 import qualified Lexer        as GHC
@@ -22,7 +24,7 @@ import GHC.Paths (libdir)
 import Argon.Preprocess
 import Argon.Visitor (funcsCC)
 import Argon.Types
-import Argon.Utils
+import Argon.Span
 
 type LModule = GHC.Located (GHC.HsModule GHC.RdrName)
 
@@ -36,21 +38,20 @@ parseCode file = do
         result <- parseModule file
         E.evaluate result) `E.catch` handleExc
     let analysis = case parseResult of
-                      -- TODO: proper msg
-                      Left (span, err) -> Left $ spanToString span ++ " " ++ err
-                      Right ast        -> Right $ funcsCC ast
+                      Left err  -> Left err
+                      Right ast -> Right $ funcsCC ast
     return (file, analysis)
 
-handleExc :: E.SomeException -> IO (Either (Span, String) LModule)
-handleExc = return . Left . (,) (1,1,1,1) . show
+handleExc :: E.SomeException -> IO (Either String LModule)
+handleExc = return . Left . show
 
-parseModule :: FilePath -> IO (Either (Span, String) LModule)
+parseModule :: FilePath -> IO (Either String LModule)
 parseModule = parseModuleWithCpp defaultCppOptions
 
 -- | Parse a module with specific instructions for the C pre-processor.
 parseModuleWithCpp :: CppOptions
                    -> FilePath
-                   -> IO (Either (Span, String) LModule)
+                   -> IO (Either String LModule)
 parseModuleWithCpp cppOptions file =
     GHC.runGhc (Just libdir) $ do
       dflags <- initDynFlags file
@@ -61,7 +62,8 @@ parseModuleWithCpp cppOptions file =
            else GHC.liftIO $ readFile file
       return $
         case parseFile dflags file fileContents of
-          GHC.PFailed ss m -> Left (srcSpanToSpan ss, GHC.showSDoc dflags m)
+          GHC.PFailed ss m -> Left $ tagMsg (srcSpanToSpan ss)
+                                            (GHC.showSDoc dflags m)
           GHC.POk _ pmod   -> Right pmod
 
 parseFile :: GHC.DynFlags -> FilePath -> String -> GHC.ParseResult LModule
@@ -85,5 +87,8 @@ initDynFlags file = do
 customLogAction :: GHC.LogAction
 customLogAction dflags severity srcSpan _ msg =
     case severity of
-      GHC.SevFatal -> fail $ GHC.showSDoc dflags msg  -- TODO: add srcspan
+      GHC.SevFatal -> throwError
+      GHC.SevError -> throwError
       _            -> return ()
+    where throwError = E.throwIO $ GhcParseError (srcSpanToSpan srcSpan)
+                                                 (GHC.showSDoc dflags msg)

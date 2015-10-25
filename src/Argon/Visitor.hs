@@ -8,8 +8,8 @@ import qualified GHC
 import qualified RdrName as GHC
 import qualified OccName as GHC
 
-import Argon.Utils
-import Argon.Types (Span, ComplexityBlock(..))
+import Argon.Span
+import Argon.Types (ComplexityBlock(..))
 
 type Exp = GHC.HsExpr GHC.RdrName
 type Function = GHC.HsBindLR GHC.RdrName GHC.RdrName

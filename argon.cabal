@@ -33,7 +33,7 @@ library
                        Argon.Formatters
                        Argon.Types
                        Argon.Preprocess
-                       Argon.Utils
+                       Argon.Span
   build-depends:       base             >=4.7    && <5
                      , ansi-terminal    ==0.6.*
                      , aeson            ==0.8.*
@@ -88,7 +88,7 @@ test-suite argon-test
                        Argon.Formatters
                        Argon.Types
                        Argon.Preprocess
-                       Argon.Utils
+                       Argon.Span
 
 test-suite style
   type:                exitcode-stdio-1.0
