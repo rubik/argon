@@ -21,7 +21,7 @@ order :: [ComplexityBlock] -> [ComplexityBlock]
 order = sortOn (\(CC ((l, _, _, _), f, cc)) -> (-cc, l, f))
 
 -- | Filter the results of the analysis, with respect to the given
---   'ResultsOptions'.
+--   'Config'.
 filterResults :: Config
               -> (FilePath, AnalysisResult)
               -> (FilePath, AnalysisResult)
@@ -30,7 +30,7 @@ filterResults o (s, Right rs) =
     (s, Right $ order [r | r@(CC (_, _, cc)) <- rs, cc >= minCC o])
 
 -- | Export analysis' results. How to export the data is defined by the
---   'ResultsOptions'.
+--   'Config' parameter.
 export :: Config -> [(FilePath, AnalysisResult)] -> String
 export opts rs =
     case outputMode opts of

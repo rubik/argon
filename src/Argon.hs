@@ -14,14 +14,17 @@ module Argon
     , ComplexityBlock(CC)
     , OutputMode(..)
     , Config(..)
+    , Span
     -- * Parsing
-    , parseCode
+    , analyze
+    , parseModule
     -- * Manipulating results
     , order
     , filterResults
     , export
     ) where
 
-import Argon.Parser (parseCode)
+import Argon.Parser (analyze, parseModule)
 import Argon.Results (order, export, filterResults)
 import Argon.Types
+import Argon.Span

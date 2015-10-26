@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-module Argon.Parser (parseCode)
+module Argon.Parser (analyze, parseModule)
     where
 
 import Prelude hiding (span)
@@ -31,9 +31,9 @@ type LModule = GHC.Located (GHC.HsModule GHC.RdrName)
 
 -- | Parse the code in the given filename and compute cyclomatic complexity for
 --   every function binding.
-parseCode :: FilePath  -- ^ The filename corresponding to the source code
-          -> IO (FilePath, AnalysisResult)
-parseCode file = do
+analyze :: FilePath  -- ^ The filename corresponding to the source code
+        -> IO (FilePath, AnalysisResult)
+analyze file = do
     parseResult <- (do
         result <- parseModule file
         E.evaluate result) `E.catch` handleExc
@@ -45,6 +45,7 @@ parseCode file = do
 handleExc :: E.SomeException -> IO (Either String LModule)
 handleExc = return . Left . show
 
+-- | Parse a module with the default instructions for the C pre-processor
 parseModule :: FilePath -> IO (Either String LModule)
 parseModule = parseModuleWithCpp defaultCppOptions
 
@@ -61,13 +62,13 @@ parseModuleWithCpp cppOptions file =
            then getPreprocessedSrcDirect cppOptions file
            else GHC.liftIO $ readFile file
       return $
-        case parseFile dflags file fileContents of
+        case parseCode dflags file fileContents of
           GHC.PFailed ss m -> Left $ tagMsg (srcSpanToSpan ss)
                                             (GHC.showSDoc dflags m)
           GHC.POk _ pmod   -> Right pmod
 
-parseFile :: GHC.DynFlags -> FilePath -> String -> GHC.ParseResult LModule
-parseFile = runParser GHC.parseModule
+parseCode :: GHC.DynFlags -> FilePath -> String -> GHC.ParseResult LModule
+parseCode = runParser GHC.parseModule
 
 runParser :: GHC.P a -> GHC.DynFlags -> FilePath -> String -> GHC.ParseResult a
 runParser parser flags filename str = GHC.unP parser parseState

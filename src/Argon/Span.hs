@@ -7,6 +7,8 @@ import Control.Arrow ((&&&))
 import qualified SrcLoc     as GHC
 import qualified FastString as GHC
 
+-- | Type synonym representing a portion of the source code. The tuple
+--   represents the following: @(start line, start col, end line, end col)@.
 type Span = (Int, Int, Int, Int)
 
 

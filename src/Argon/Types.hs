@@ -21,7 +21,7 @@ data GhcParseError = GhcParseError {
 } deriving (Typeable)
 
 -- | Hold the data associated to a function binding:
---   (location, function name, complexity).
+--   @(location, function name, complexity)@.
 newtype ComplexityBlock = CC (Span, String, Int)
                         deriving (Show, Eq)
 
