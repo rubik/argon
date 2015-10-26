@@ -1,5 +1,5 @@
 Usage:
-    argon [-h] [--no-color | --json] [-m=<min>] <paths>...
+    argon [-h] [--no-color] [--json] [-m=<min>] <paths>...
 
 Options:
     -h --help       show this help
