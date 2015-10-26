@@ -46,8 +46,35 @@ spec = do
             property $ \xs -> sort xs == sort (order xs)
         it "is idempotent" $
             property $ \xs -> order xs == order (order xs)
-    describe "parseCode" $ do
+    describe "analyze" $ do
         it "accounts for case" $
-            "case.hs" `shouldAnalyze` Right [CC ((1, 1), "func", 3)]
+            "case.hs" `shouldAnalyze` Right [CC (ones, "func", 3)]
         it "accounts for if..then..else" $
-            "ifthenelse.hs" `shouldAnalyze` Right [CC ((1, 1), "f", 2)]
+            "ifthenelse.hs" `shouldAnalyze` Right [CC (ones, "f", 2)]
+        it "accounts for lambda case" $
+            "lambdacase.hs" `shouldAnalyze` Right [CC (lo 2, "g", 3)]
+        it "accounts for multi way if" $
+            "multiif.hs" `shouldAnalyze` Right [CC (lo 2, "f", 4)]
+        it "accounts for || operator" $
+            "orop.hs" `shouldAnalyze` Right [CC (lo 1, "g", 3)]
+        it "accounts for && operator" $
+            "andop.hs" `shouldAnalyze` Right [CC (lo 1, "g", 3)]
+        it "counts everything in a real example" $
+            "stack-setup.hs" `shouldAnalyze`
+                Right [ CC (lo 3, "ensureCompiler", 14)
+                      , CC ((4, 9), "wc", 1)
+                      , CC ((21, 9), "needLocal", 4)
+                      , CC ((27, 9), "isWanted", 1)
+                      , CC ((41, 17), "installedCompiler", 2)
+                      , CC ((81, 37), "tool", 1)
+                      , CC ((94, 17), "idents", 1)
+                      , CC ((103, 21), "m", 1)
+                      ]
+        it "applies CPP when needed" $
+            "cpp.hs" `shouldAnalyze` Right [CC (lo 5, "f", 4)]
+        it "catches syntax errors" $
+            "syntaxerror.hs" `shouldAnalyze`
+                Left "2:1 parse error (possibly incorrect indentation or mismatched brackets)"
+        it "catches CPP parsing errors" $
+            "cpp-error.hs" `shouldAnalyze`
+                Left "2:0  error: unterminated #else\n\t\t #if 0\n\t\t ^"

@@ -7,7 +7,6 @@ arguments :: [String]
 arguments =
     [ "app"
     , "src"
-    , "test"
     ]
 
 main :: IO ()
