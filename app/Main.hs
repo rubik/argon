@@ -6,15 +6,16 @@ import Data.List (foldl1', isSuffixOf)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as S
 import Data.Foldable (toList)
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative ((<$>))
+#endif
 import System.Environment (getArgs)
 import System.FilePath ((</>))
 import System.Directory
 import System.Directory.PathWalk
 import System.Console.Docopt
+
 import Argon
-#if __GLASGOW_HASKELL__ < 710
-import Control.Applicative ((<$>))
-#endif
 
 
 patterns :: Docopt
@@ -28,11 +29,6 @@ getOpt args def opt = getArgWithDefault args def $ longOption opt
 
 haskellFiles :: Seq FilePath -> Seq FilePath
 haskellFiles = S.filter (".hs" `isSuffixOf`)
-
-processFile :: FilePath -> IO (FilePath, AnalysisResult)
-processFile path = do
-    contents <- readFile path
-    parseCode (Just path) contents
 
 findSourceFiles :: FilePath -> IO (Seq FilePath)
 findSourceFiles path =
@@ -63,6 +59,6 @@ main :: IO ()
 main = do
     args <- parseArgsOrExit patterns =<< getArgs
     ins  <- allFiles $ args `getAllArgs` argument "paths"
-    res  <- mapM processFile $ toList ins
+    res  <- mapM analyze $ toList ins
     let conf = readConfig args
     putStr $ export conf $ map (filterResults conf) res
