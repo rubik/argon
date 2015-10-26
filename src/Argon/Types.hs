@@ -6,24 +6,23 @@ module Argon.Types (ComplexityBlock(CC), AnalysisResult, Config(..)
                    , OutputMode(..), GhcParseError(..))
     where
 
-import Prelude hiding (span)
 import Data.List (intercalate)
 import Data.Aeson
 import Data.Typeable
 import Control.Exception (Exception)
 
-import Argon.Span
+import Argon.Loc
 
 
 data GhcParseError = GhcParseError {
-    span :: Span
+    loc :: Loc
   , msg :: String
 } deriving (Typeable)
 
 -- | Hold the data associated to a function binding:
 --   @(location, function name, complexity)@.
-newtype ComplexityBlock = CC (Span, String, Int)
-                        deriving (Show, Eq)
+newtype ComplexityBlock = CC (Loc, String, Int)
+                        deriving (Show, Eq, Ord)
 
 -- | Represent the result of the analysis of one file.
 --   It can either be an error message or a list of
@@ -46,14 +45,13 @@ data OutputMode = BareText -- ^ Text-only output, no colors.
 instance Exception GhcParseError
 
 instance Show GhcParseError where
-    show e = tagMsg (span e) $ fixNewlines (msg e)
+    show e = tagMsg (loc e) $ fixNewlines (msg e)
         where fixNewlines = intercalate "\n\t\t" . lines
 
 instance ToJSON ComplexityBlock where
-    toJSON (CC ((s, c, e, _), func, cc)) =
+    toJSON (CC ((s, c), func, cc)) =
         object [ "lineno"     .= s
                , "col"        .= c
-               , "endline"    .= e
                , "name"       .= func
                , "complexity" .= cc
                ]

@@ -18,7 +18,7 @@ sortOn f =
 --     2. line number (ascending)
 --     3. function name (alphabetically)
 order :: [ComplexityBlock] -> [ComplexityBlock]
-order = sortOn (\(CC ((l, _, _, _), f, cc)) -> (-cc, l, f))
+order = sortOn (\(CC ((l, _), f, cc)) -> (-cc, l, f))
 
 -- | Filter the results of the analysis, with respect to the given
 --   'Config'.

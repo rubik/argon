@@ -18,11 +18,11 @@ instance Arbitrary ComplexityBlock where
     shrink (CC t) = map CC $ shrink t
 
 
-ones :: Span
-ones = (1, 1, 1, 1)
+ones :: Loc
+ones = (1, 1)
 
-sp :: Int -> Int -> Span
-sp s e = (s, 1, e, 1)
+lo :: Int -> Loc
+lo s = (s, 1)
 
 shouldAnalyze :: String -> AnalysisResult -> Expectation
 shouldAnalyze f r = analyze path `shouldReturn` (path, r)
@@ -34,18 +34,20 @@ spec = do
         it "does not error on empty list" $
             order [] `shouldBe` []
         it "orders by complexity (descending)" $
-            order [CC (ones, "f", 1), CC (sp 2 1, "f", 2)] `shouldBe`
-                [CC (sp 2 1, "f", 2), CC (ones, "f", 1)]
+            order [CC (ones, "f", 1), CC (lo 2, "f", 2)] `shouldBe`
+                [CC (lo 2, "f", 2), CC (ones, "f", 1)]
         it "orders by lines (ascending)" $
-            order [CC (sp 11 1, "f", 3), CC (ones, "f", 3)] `shouldBe`
-                [CC (ones, "f", 3), CC (sp 11 1, "f", 3)]
+            order [CC (lo 11, "f", 3), CC (ones, "f", 3)] `shouldBe`
+                [CC (ones, "f", 3), CC (lo 11, "f", 3)]
         it "orders by function name (ascending)" $
-            order [CC (sp 11 1, "g", 3), CC (sp 11 1, "f", 3)] `shouldBe`
-                [CC (sp 11 1, "f", 3), CC (sp 11 1, "g", 3)]
+            order [CC (lo 11, "g", 3), CC (lo 11, "f", 3)] `shouldBe`
+                [CC (lo 11, "f", 3), CC (lo 11, "g", 3)]
+        it "does not add or remove elements" $
+            property $ \xs -> sort xs == sort (order xs)
         it "is idempotent" $
             property $ \xs -> order xs == order (order xs)
     describe "parseCode" $ do
         it "accounts for case" $
-            "case.hs" `shouldAnalyze` Right [CC ((1, 1, 1, 5), "func", 3)]
+            "case.hs" `shouldAnalyze` Right [CC ((1, 1), "func", 3)]
         it "accounts for if..then..else" $
-            "ifthenelse.hs" `shouldAnalyze` Right [CC ((1, 1, 1, 2), "f", 2)]
+            "ifthenelse.hs" `shouldAnalyze` Right [CC ((1, 1), "f", 2)]

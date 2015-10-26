@@ -2,7 +2,6 @@
 module Argon.Parser (analyze, parseModule)
     where
 
-import Prelude hiding (span)
 import Control.Monad (void)
 import qualified Control.Exception as E
 #if __GLASGOW_HASKELL__ < 710
@@ -24,7 +23,7 @@ import GHC.Paths (libdir)
 import Argon.Preprocess
 import Argon.Visitor (funcsCC)
 import Argon.Types
-import Argon.Span
+import Argon.Loc
 
 type LModule = GHC.Located (GHC.HsModule GHC.RdrName)
 
@@ -63,7 +62,7 @@ parseModuleWithCpp cppOptions file =
            else GHC.liftIO $ readFile file
       return $
         case parseCode dflags file fileContents of
-          GHC.PFailed ss m -> Left $ tagMsg (srcSpanToSpan ss)
+          GHC.PFailed ss m -> Left $ tagMsg (srcSpanToLoc ss)
                                             (GHC.showSDoc dflags m)
           GHC.POk _ pmod   -> Right pmod
 
@@ -91,5 +90,5 @@ customLogAction dflags severity srcSpan _ m =
       GHC.SevFatal -> throwError
       GHC.SevError -> throwError
       _            -> return ()
-    where throwError = E.throwIO $ GhcParseError (srcSpanToSpan srcSpan)
+    where throwError = E.throwIO $ GhcParseError (srcSpanToLoc srcSpan)
                                                  (GHC.showSDoc dflags m)

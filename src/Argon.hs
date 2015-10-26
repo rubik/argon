@@ -14,7 +14,7 @@ module Argon
     , ComplexityBlock(CC)
     , OutputMode(..)
     , Config(..)
-    , Span
+    , Loc
     -- * Parsing
     , analyze
     , parseModule
@@ -27,4 +27,4 @@ module Argon
 import Argon.Parser (analyze, parseModule)
 import Argon.Results (order, export, filterResults)
 import Argon.Types
-import Argon.Span
+import Argon.Loc

@@ -9,20 +9,20 @@ import Text.Printf (printf)
 import System.Console.ANSI
 
 import Argon.Types
-import Argon.Span
+import Argon.Loc
 
 
 bareTextFormatter :: [(FilePath, AnalysisResult)] -> String
 bareTextFormatter = formatSingle $ formatResult
     (printf "%s\n\t%s")
     (\e -> "error:" ++ e)
-    (\(CC (l, func, cc)) -> printf "%s %s - %d" (spanToString l) func cc)
+    (\(CC (l, func, cc)) -> printf "%s %s - %d" (locToString l) func cc)
 
 coloredTextFormatter :: [(FilePath, AnalysisResult)] -> String
 coloredTextFormatter = formatSingle $ formatResult
     (\name rest -> printf "%s%s%s\n\t%s%s" open name reset rest reset)
     (\e -> printf "%serror%s: %s%s" (fore Red) reset e reset)
-    (\(CC (l, func, cc)) -> printf "%s %s - %s%s" (spanToString l)
+    (\(CC (l, func, cc)) -> printf "%s %s - %s%s" (locToString l)
                                                   (coloredFunc func l)
                                                   (coloredRank cc) reset)
 
@@ -38,8 +38,8 @@ fore color = setSGRCode [SetColor Foreground Dull color]
 reset :: String
 reset = setSGRCode []
 
-coloredFunc :: String -> Span -> String
-coloredFunc f (_, c, _, _) = fore color ++ f ++ reset
+coloredFunc :: String -> Loc -> String
+coloredFunc f (_, c) = fore color ++ f ++ reset
     where color = if c == 1 then Cyan else Magenta
 
 coloredRank :: Int -> String

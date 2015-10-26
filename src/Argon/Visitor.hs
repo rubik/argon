@@ -8,7 +8,7 @@ import qualified GHC
 import qualified RdrName as GHC
 import qualified OccName as GHC
 
-import Argon.Span
+import Argon.Loc
 import Argon.Types (ComplexityBlock(..))
 
 type Exp = GHC.HsExpr GHC.RdrName
@@ -28,8 +28,8 @@ getBinds = everything (++) $ mkQ [] visit
     where visit fun@(GHC.FunBind {}) = [fun]
           visit _ = []
 
-getLocation :: GHC.Located a -> Span
-getLocation = srcSpanToSpan . GHC.getLoc
+getLocation :: GHC.Located a -> Loc
+getLocation = srcSpanToLoc . GHC.getLoc
 
 getFuncName :: Function -> String
 getFuncName f = case GHC.m_fun_id_infix . GHC.unLoc . head $ getMatches f of
