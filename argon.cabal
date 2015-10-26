@@ -76,6 +76,7 @@ test-suite argon-test
                      , ghc              >=7.10.2 && <8
                      , ghc-paths        ==0.1.*
                      , syb              ==0.5.*
+                     , filepath         ==1.4.*
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   if impl(ghc < 7.10.2)
     buildable: False
