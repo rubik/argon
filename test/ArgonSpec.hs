@@ -1,4 +1,7 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DeriveAnyClass #-}
 module ArgonSpec (spec)
     where
 
@@ -9,13 +12,18 @@ import Control.Applicative ((<$>), (<*>))
 import Test.Hspec
 import Test.QuickCheck
 import System.FilePath ((</>))
+import qualified SrcLoc     as GHC
+import qualified FastString as GHC
 import Argon
+import Argon.Loc
 
 instance Arbitrary ComplexityBlock where
     arbitrary = (\a b c -> CC (a, b, c)) <$> arbitrary
                                          <*> arbitrary
                                          <*> arbitrary
     shrink (CC t) = map CC $ shrink t
+
+deriving instance Arbitrary OutputMode
 
 
 ones :: Loc
@@ -24,12 +32,25 @@ ones = (1, 1)
 lo :: Int -> Loc
 lo s = (s, 1)
 
+realSpan :: Int -> Int -> GHC.SrcSpan
+realSpan a b = GHC.mkSrcSpan (mkLoc a b) $ mkLoc (-a) (b + 24)
+    where mkLoc = GHC.mkSrcLoc (GHC.mkFastString "real loc")
+
 shouldAnalyze :: String -> AnalysisResult -> Expectation
 shouldAnalyze f r = analyze path `shouldReturn` (path, r)
     where path = "test" </> "data" </> f
 
 spec :: Spec
 spec = do
+    describe "loc module" $ do
+        it "can convert a real src span to loc" $
+            property $ \a b -> srcSpanToLoc (realSpan a b) == (a, b)
+        it "can convert a bad src span to loc" $
+            srcSpanToLoc GHC.noSrcSpan `shouldBe` (0, 0)
+        it "can convert a loc to string" $
+            locToString (1, 30) `shouldBe` "1:30"
+        it "can tag messages" $
+            tagMsg (2, 3) "my custom msg" `shouldBe` "2:3 my custom msg"
     describe "order" $ do
         it "does not error on empty list" $
             order [] `shouldBe` []
@@ -46,6 +67,17 @@ spec = do
             property $ \xs -> sort xs == sort (order xs)
         it "is idempotent" $
             property $ \xs -> order xs == order (order xs)
+    describe "filterResults" $ do
+        it "discards results with too low complexity" $
+            filterResults (Config { minCC = 3, outputMode = BareText })
+                          ("p", Right [ CC (ones, "f", 3), CC (lo 2, "g", 2)
+                                , CC (lo 4, "h", 10), CC (lo 3, "l", 1)])
+                          `shouldBe`
+                          ("p", Right [CC (lo 4, "h", 10), CC (ones, "f", 3)])
+        it "does nothing on Left" $
+            property $ \m o p err -> filterResults (Config m o)
+                                                   (p, Left err) ==
+                                                   (p, Left err)
     describe "analyze" $ do
         it "accounts for case" $
             "case.hs" `shouldAnalyze` Right [CC (ones, "func", 3)]

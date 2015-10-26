@@ -41,6 +41,7 @@ data Config = Config {
 data OutputMode = BareText -- ^ Text-only output, no colors.
                 | Colored  -- ^ Text-only output, with colors.
                 | JSON     -- ^ Data is serialized to JSON.
+                deriving (Show, Eq)
 
 instance Exception GhcParseError
 
