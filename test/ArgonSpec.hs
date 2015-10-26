@@ -5,13 +5,15 @@
 module ArgonSpec (spec)
     where
 
-import Data.List (sort)
+import Data.List (sort, isPrefixOf)
+import Data.Either (isLeft, lefts)
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative ((<$>), (<*>))
 #endif
 import Test.Hspec
 import Test.QuickCheck
 import System.FilePath ((</>))
+import System.IO.Unsafe (unsafePerformIO)
 import qualified SrcLoc     as GHC
 import qualified FastString as GHC
 import Argon
@@ -36,9 +38,12 @@ realSpan :: Int -> Int -> GHC.SrcSpan
 realSpan a b = GHC.mkSrcSpan (mkLoc a b) $ mkLoc (-a) (b + 24)
     where mkLoc = GHC.mkSrcLoc (GHC.mkFastString "real loc")
 
+path :: String -> FilePath
+path f = "test" </> "data" </> f
+
 shouldAnalyze :: String -> AnalysisResult -> Expectation
-shouldAnalyze f r = analyze path `shouldReturn` (path, r)
-    where path = "test" </> "data" </> f
+shouldAnalyze f r = analyze p `shouldReturn` (p, r)
+    where p = path f
 
 spec :: Spec
 spec = do
@@ -108,5 +113,7 @@ spec = do
             "syntaxerror.hs" `shouldAnalyze`
                 Left "2:1 parse error (possibly incorrect indentation or mismatched brackets)"
         it "catches CPP parsing errors" $
-            "cpp-error.hs" `shouldAnalyze`
-                Left "2:0  error: unterminated #else\n\t\t #if 0\n\t\t ^"
+            unsafePerformIO (analyze (path "cpp-error.hs")) `shouldSatisfy`
+            \(_, res) ->
+                isLeft res && ("2:0  error: unterminated #else"
+                               `isPrefixOf` head (lefts [res]))
