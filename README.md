@@ -71,7 +71,7 @@ order):
 3. alphabetically
 
 When colors are enabled (default), Argon computes a rank associated with the
-coomplexity score:
+complexity score:
 
 | Complexity | Rank |
 |:----------:|:----:|
