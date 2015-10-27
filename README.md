@@ -66,9 +66,9 @@ The Argon executable expects a list of file paths (files or directories):
 For every file, Argon sorts results with the following criteria (and in this
 order):
 
-    * complexity (descending)
-    * line number (ascending)
-    * alphabetically
+1. complexity (descending)
+2. line number (ascending)
+3. alphabetically
 
 When colors are enabled (default), Argon computes a rank associated with the
 coomplexity score:
