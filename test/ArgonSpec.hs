@@ -2,6 +2,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE DeriveAnyClass #-}
+
 module ArgonSpec (spec)
     where
 
@@ -47,42 +48,49 @@ shouldAnalyze f r = analyze p `shouldReturn` (p, r)
 
 spec :: Spec
 spec = do
-    describe "loc module" $ do
-        it "can convert a real src span to loc" $
-            property $ \a b -> srcSpanToLoc (realSpan a b) == (a, b)
-        it "can convert a bad src span to loc" $
-            srcSpanToLoc GHC.noSrcSpan `shouldBe` (0, 0)
-        it "can convert a loc to string" $
-            locToString (1, 30) `shouldBe` "1:30"
-        it "can tag messages" $
-            tagMsg (2, 3) "my custom msg" `shouldBe` "2:3 my custom msg"
-    describe "order" $ do
-        it "does not error on empty list" $
-            order [] `shouldBe` []
-        it "orders by complexity (descending)" $
-            order [CC (ones, "f", 1), CC (lo 2, "f", 2)] `shouldBe`
-                [CC (lo 2, "f", 2), CC (ones, "f", 1)]
-        it "orders by lines (ascending)" $
-            order [CC (lo 11, "f", 3), CC (ones, "f", 3)] `shouldBe`
-                [CC (ones, "f", 3), CC (lo 11, "f", 3)]
-        it "orders by function name (ascending)" $
-            order [CC (lo 11, "g", 3), CC (lo 11, "f", 3)] `shouldBe`
-                [CC (lo 11, "f", 3), CC (lo 11, "g", 3)]
-        it "does not add or remove elements" $
-            property $ \xs -> sort xs == sort (order xs)
-        it "is idempotent" $
-            property $ \xs -> order xs == order (order xs)
-    describe "filterResults" $ do
-        it "discards results with too low complexity" $
-            filterResults (Config { minCC = 3, outputMode = BareText })
-                          ("p", Right [ CC (ones, "f", 3), CC (lo 2, "g", 2)
-                                , CC (lo 4, "h", 10), CC (lo 3, "l", 1)])
-                          `shouldBe`
-                          ("p", Right [CC (lo 4, "h", 10), CC (ones, "f", 3)])
-        it "does nothing on Left" $
-            property $ \m o p err -> filterResults (Config m o)
-                                                   (p, Left err) ==
-                                                   (p, Left err)
+    describe "Argon.Loc" $ do
+        describe "srcSpanToLoc" $ do
+            it "can convert a real src span to loc" $
+                property $ \a b -> srcSpanToLoc (realSpan a b) == (a, b)
+            it "can convert a bad src span to loc" $
+                srcSpanToLoc GHC.noSrcSpan `shouldBe` (0, 0)
+        describe "locToString" $
+            it "can convert a loc to string" $
+                locToString (1, 30) `shouldBe` "1:30"
+        describe "tagMsg" $
+            it "can tag messages" $
+                tagMsg (2, 3) "my custom msg" `shouldBe` "2:3 my custom msg"
+    describe "Argon.Results" $ do
+        describe "order" $ do
+            it "does not error on empty list" $
+                order [] `shouldBe` []
+            it "orders by complexity (descending)" $
+                order [CC (ones, "f", 1), CC (lo 2, "f", 2)] `shouldBe`
+                    [CC (lo 2, "f", 2), CC (ones, "f", 1)]
+            it "orders by lines (ascending)" $
+                order [CC (lo 11, "f", 3), CC (ones, "f", 3)] `shouldBe`
+                    [CC (ones, "f", 3), CC (lo 11, "f", 3)]
+            it "orders by function name (ascending)" $
+                order [CC (lo 11, "g", 3), CC (lo 11, "f", 3)] `shouldBe`
+                    [CC (lo 11, "f", 3), CC (lo 11, "g", 3)]
+            it "does not add or remove elements" $
+                property $ \xs -> sort xs == sort (order xs)
+            it "is idempotent" $
+                property $ \xs -> order xs == order (order xs)
+        describe "filterResults" $ do
+            it "discards results with too low complexity" $
+                filterResults (Config { minCC = 3, outputMode = BareText })
+                              ("p", Right [ CC (ones, "f", 3)
+                                          , CC (lo 2, "g", 2)
+                                          , CC (lo 4, "h", 10)
+                                          , CC (lo 3, "l", 1)])
+                              `shouldBe`
+                              ("p", Right [ CC (lo 4, "h", 10)
+                                          , CC (ones, "f", 3)])
+            it "does nothing on Left" $
+                property $ \m o p err -> filterResults (Config m o)
+                                                       (p, Left err) ==
+                                                       (p, Left err)
     describe "analyze" $ do
         it "accounts for case" $
             "case.hs" `shouldAnalyze` Right [CC (ones, "func", 3)]
