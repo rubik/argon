@@ -35,12 +35,12 @@ library
                        Argon.Preprocess
                        Argon.Loc
   build-depends:       base             >=4.7    && <5
-                     , ansi-terminal    ==0.6.*
-                     , aeson            ==0.8.*
-                     , bytestring       ==0.10.*
+                     , ansi-terminal    >=0.6
+                     , aeson            >=0.8
+                     , bytestring       >=0.10
                      , ghc              >=7.10.2 && <8
-                     , ghc-paths        ==0.1.*
-                     , syb              ==0.5.*
+                     , ghc-paths        >=0.1
+                     , syb              >=0.5
   default-language:    Haskell2010
   ghc-options:         -Wall
   if impl(ghc < 7.10.2)
@@ -51,11 +51,11 @@ executable argon
   main-is:             Main.hs
   ghc-options:         -Wall
   build-depends:       base             >=4.7    && <5
-                     , docopt           ==0.7.*
-                     , pathwalk         ==0.3.*
-                     , filepath         ==1.4.*
-                     , directory        ==1.2.*
-                     , containers       ==0.5.*
+                     , docopt           >=0.7
+                     , pathwalk         >=0.3
+                     , filepath         >=1.4
+                     , directory        >=1.2
+                     , containers       >=0.5
                      , argon            -any
   default-language:    Haskell2010
   if impl(ghc < 7.10.2)
@@ -66,16 +66,16 @@ test-suite argon-test
   hs-source-dirs:      test src
   main-is:             Spec.hs
   build-depends:       base             >=4.7    && <5
-                     , argon            -any
-                     , hspec            ==2.1.*
-                     , QuickCheck       -any
-                     , ansi-terminal    ==0.6.*
-                     , aeson            ==0.8.*
-                     , bytestring       ==0.10.*
+                     , ansi-terminal    >=0.6
+                     , aeson            >=0.8
+                     , bytestring       >=0.10
                      , ghc              >=7.10.2 && <8
-                     , ghc-paths        ==0.1.*
-                     , syb              ==0.5.*
-                     , filepath         ==1.4.*
+                     , ghc-paths        >=0.1
+                     , syb              >=0.5
+                     , hspec            >=2.1
+                     , QuickCheck       -any
+                     , filepath         >=1.4
+                     , argon            -any
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   if impl(ghc < 7.10.2)
     buildable: False
