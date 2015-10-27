@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-module Argon.Parser (analyze, parseModule)
+module Argon.Parser (LModule, analyze, parseModule)
     where
 
 import Control.Monad (void)
@@ -25,6 +25,8 @@ import Argon.Visitor (funcsCC)
 import Argon.Types
 import Argon.Loc
 
+-- | Type synonym for a syntax node representing a module tagged with a
+--   'SrcSpan'
 type LModule = GHC.Located (GHC.HsModule GHC.RdrName)
 
 

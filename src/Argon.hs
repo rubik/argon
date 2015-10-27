@@ -15,6 +15,7 @@ module Argon
     , OutputMode(..)
     , Config(..)
     , Loc
+    , LModule
     -- * Parsing
     , analyze
     , parseModule
@@ -24,7 +25,7 @@ module Argon
     , export
     ) where
 
-import Argon.Parser (analyze, parseModule)
+import Argon.Parser (LModule, analyze, parseModule)
 import Argon.Results (order, export, filterResults)
 import Argon.Types
 import Argon.Loc
