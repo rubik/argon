@@ -4,5 +4,7 @@ packages:
 - '.'
 extra-deps:
 - docopt-0.7.0.4
-- pathwalk-0.3.1.0
+- pathwalk-0.3.1.2
+- syb-0.4.4
+- ghc-7.8.4
 resolver: lts-2.22

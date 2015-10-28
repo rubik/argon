@@ -1,9 +1,7 @@
 language: haskell
 
 env:
-  # Unfortunatly the Stack resolver for this version of GHC has problems
-  # finalizing the build plan. Removing until a better solution comes along.
-  #- GHCVER=7.8.4 STACK_YAML=stack-ghc-7.8.4.yaml
+  - GHCVER=7.8.4 STACK_YAML=stack-7.8.yaml
   - GHCVER=7.10.2 STACK_YAML=stack.yaml
 
 branches:

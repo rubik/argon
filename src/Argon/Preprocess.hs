@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
 -- | This module provides support for CPP and interpreter directives.
 module Argon.Preprocess
@@ -7,6 +8,9 @@ module Argon.Preprocess
    , getPreprocessedSrcDirect
    ) where
 
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative ((<$>))
+#endif
 import qualified GHC
 import qualified DynFlags       as GHC
 import qualified MonadUtils     as GHC

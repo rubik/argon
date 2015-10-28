@@ -4,9 +4,6 @@ module Argon.Parser (LModule, analyze, parseModule)
 
 import Control.Monad (void)
 import qualified Control.Exception as E
-#if __GLASGOW_HASKELL__ < 710
-import Control.Applicative ((<$>))
-#endif
 
 import qualified GHC hiding (parseModule)
 import qualified SrcLoc       as GHC
