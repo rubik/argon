@@ -36,6 +36,11 @@ Simple as ``stack install argon`` or ``cabal install argon``.
 Note: if you are using Stack and your resolver if too old, you might have to
 add some packages to your `stack.yaml` file.
 
+#### GHC compatibility
+
+Argon is compatible with GHC 7.8 and 7.10, it's tested against those versions
+only.
+
 ### Running
 
 The Argon executable expects a list of file paths (files or directories):
