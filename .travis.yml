@@ -19,7 +19,10 @@ cache:
 before_install:
   - mkdir -p $HOME/.local/bin
   - export PATH=$HOME/.local/bin:$PATH
-  - travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v0.1.6.0/stack-0.1.6.0-linux-x86_64.tar.gz | tar xz stack -C $HOME/.local/bin
+  - export STACK_VERSION=0.1.6.0
+  - export STACK_FULLVERSION=stack-$STACK_VERSION-linux-x86_64
+  - travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/$STACK_VERSION/$STACK_FULLVERSION.tar.gz | tar -xz -C /tmp $STACK_FULLVERSION/stack
+  - mv /tmp/$STACK_FULLVERSION/stack $HOME/.local/bin
   - chmod a+x $HOME/.local/bin/stack
 
 install:
