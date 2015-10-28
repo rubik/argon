@@ -1,3 +1,5 @@
+-- The following code is taken from ghc-exactprint, because adding a dependency
+-- for just one module seemed excessive.
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
 -- | This module provides support for CPP and interpreter directives.
