@@ -1,4 +1,4 @@
-language: generic
+language: haskell
 
 env:
   # Unfortunatly the Stack resolver for this version of GHC has problems
