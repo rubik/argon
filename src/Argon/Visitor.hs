@@ -1,7 +1,8 @@
 module Argon.Visitor (funcsCC)
     where
 
-import Data.Generics (Data, Typeable, everything, mkQ)
+import Data.Generics (Data, Typeable, mkQ)
+import GHC.SYB.Utils (Stage(..), everythingStaged)
 import Control.Arrow ((&&&))
 
 import qualified GHC
@@ -24,7 +25,7 @@ funCC :: Function -> ComplexityBlock
 funCC f = CC (getLocation $ GHC.fun_id f, getFuncName f, complexity f)
 
 getBinds :: (Data from, Typeable from) => from -> [Function]
-getBinds = everything (++) $ mkQ [] visit
+getBinds = everythingStaged Parser (++) [] $ mkQ [] visit
     where visit fun@(GHC.FunBind {}) = [fun]
           visit _ = []
 
@@ -36,7 +37,7 @@ getFuncName = getName . GHC.unLoc . GHC.fun_id
 
 complexity :: Function -> Int
 complexity f = let matches = getMatches f
-                   query = everything (+) $ 0 `mkQ` visit
+                   query = everythingStaged Parser (+) 0 $ 0 `mkQ` visit
                    visit = uncurry (+) . (visitExp &&& visitOp)
                 in length matches + sumWith query matches
 
