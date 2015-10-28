@@ -7,6 +7,7 @@ import Data.Sequence (Seq)
 import qualified Data.Sequence as S
 import Data.Foldable (toList)
 #if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mappend)
 import Control.Applicative ((<$>))
 #endif
 import System.Environment (getArgs)

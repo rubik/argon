@@ -1,7 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE DeriveAnyClass #-}
 
 module ArgonSpec (spec)
     where
@@ -26,7 +25,7 @@ instance Arbitrary ComplexityBlock where
                                          <*> arbitrary
     shrink (CC t) = map CC $ shrink t
 
-deriving instance Arbitrary OutputMode
+instance Arbitrary OutputMode where
 
 
 ones :: Loc

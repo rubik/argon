@@ -32,9 +32,7 @@ getLocation :: GHC.Located a -> Loc
 getLocation = srcSpanToLoc . GHC.getLoc
 
 getFuncName :: Function -> String
-getFuncName f = case GHC.m_fun_id_infix . GHC.unLoc . head $ getMatches f of
-                  Just name -> getName . GHC.unLoc $ fst name
-                  Nothing   -> "<unknown>"
+getFuncName = getName . GHC.unLoc . GHC.fun_id
 
 complexity :: Function -> Int
 complexity f = let matches = getMatches f
