@@ -114,11 +114,14 @@ spec = do
                       , CC ((94, 17), "idents", 1)
                       , CC ((103, 21), "m", 1)
                       ]
+        it "correctly applies CPP" $
+            "cpp-psyn.hs" `shouldAnalyze` Right []
         it "applies CPP when needed" $
             "cpp.hs" `shouldAnalyze` Right [CC (lo 5, "f", 4)]
         it "catches syntax errors" $
             "syntaxerror.hs" `shouldAnalyze`
-                Left "2:1 parse error (possibly incorrect indentation or mismatched brackets)"
+                Left ("2:1 parse error (possibly incorrect indentation or" ++
+                      " mismatched brackets)")
         it "catches CPP parsing errors" $
             unsafePerformIO (analyze (path "cpp-error.hs")) `shouldSatisfy`
             \(_, res) ->
