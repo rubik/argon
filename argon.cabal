@@ -8,7 +8,7 @@ license-file:        LICENSE
 author:              Michele Lacchia
 maintainer:          michelelacchia@gmail.com
 copyright:           2015 Michele Lacchia
-category:            Web
+category:            Development, Static Analysis
 build-type:          Simple
 cabal-version:       >=1.10
 description:
