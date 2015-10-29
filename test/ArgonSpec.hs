@@ -114,21 +114,26 @@ spec = do
                       , CC ((94, 17), "idents", 1)
                       , CC ((103, 21), "m", 1)
                       ]
-        it "parses modules with Template Haskell without problems" $
-            "th.hs" `shouldAnalyze` Right [CC (lo 7, "foo", 1)]
+        describe "extensions" $ do
 -- Not even GHC 7.8.4 is able to run the file blow, so it's not an Argon bug
 #if __GLASGOW_HASKELL__ >= 710
-        it "correctly applies CPP" $
-            "cpp-psyn.hs" `shouldAnalyze` Right []
+            it "correctly applies CPP" $
+                "cpp-psyn.hs" `shouldAnalyze` Right []
 #endif
-        it "applies CPP when needed" $
-            "cpp.hs" `shouldAnalyze` Right [CC (lo 5, "f", 4)]
-        it "catches syntax errors" $
-            "syntaxerror.hs" `shouldAnalyze`
-                Left ("2:1 parse error (possibly incorrect indentation or" ++
-                      " mismatched brackets)")
-        it "catches CPP parsing errors" $
-            unsafePerformIO (analyze (path "cpp-error.hs")) `shouldSatisfy`
-            \(_, res) ->
-                isLeft res && ("2:0  error: unterminated #else"
-                               `isPrefixOf` head (lefts [res]))
+            it "applies CPP when needed" $
+                "cpp.hs" `shouldAnalyze` Right [CC (lo 5, "f", 4)]
+            it "works with TemplateHaskell" $
+                "th.hs" `shouldAnalyze` Right [CC (lo 7, "foo", 1)]
+            it "works with DataKinds, GADTs, KindSignatures" $
+                "datakinds.hs" `shouldAnalyze`
+                    Right [CC (lo 16, "taskOneWorker", 1), CC (lo 20, "main", 1)]
+        describe "errors" $ do
+            it "catches syntax errors" $
+                "syntaxerror.hs" `shouldAnalyze`
+                    Left ("2:1 parse error (possibly incorrect indentation" ++
+                          " or mismatched brackets)")
+            it "catches CPP parsing errors" $
+                unsafePerformIO (analyze (path "cpp-error.hs")) `shouldSatisfy`
+                \(_, res) ->
+                    isLeft res && ("2:0  error: unterminated #else"
+                                   `isPrefixOf` head (lefts [res]))
