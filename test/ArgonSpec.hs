@@ -114,8 +114,10 @@ spec = do
                       , CC ((94, 17), "idents", 1)
                       , CC ((103, 21), "m", 1)
                       ]
+#if __GLASGOW_HASKELL__ >= 710
         it "correctly applies CPP" $
             "cpp-psyn.hs" `shouldAnalyze` Right []
+#endif
         it "applies CPP when needed" $
             "cpp.hs" `shouldAnalyze` Right [CC (lo 5, "f", 4)]
         it "catches syntax errors" $
