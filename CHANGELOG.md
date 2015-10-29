@@ -2,6 +2,18 @@
 
 This package uses [Semantic Versioning][1].
 
+## v0.3.2.0
+
+- Fix error in CPP processing: #14
+
+## v0.3.1.2
+
+- Add `stack-7.8.yaml` to sdist. It's then possible to run tests from sdist.
+
+## v0.3.1.1
+
+- Add test data to sdist: fpco/stackage#932
+
 ## v0.3.1.0
 
 - Add compatibility with GHC 7.8: #6
