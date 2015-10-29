@@ -114,6 +114,9 @@ spec = do
                       , CC ((94, 17), "idents", 1)
                       , CC ((103, 21), "m", 1)
                       ]
+        it "parses modules with Template Haskell without problems" $
+            "th.hs" `shouldAnalyze` Right [CC (lo 7, "foo", 1)]
+-- Not even GHC 7.8.4 is able to run the file blow, so it's not an Argon bug
 #if __GLASGOW_HASKELL__ >= 710
         it "correctly applies CPP" $
             "cpp-psyn.hs" `shouldAnalyze` Right []
