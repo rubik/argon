@@ -23,6 +23,7 @@ extra-source-files:
     README.md
     CHANGELOG.md
     USAGE.txt
+    test/data/*.hs
 tested-with: GHC >= 7.8
 
 library
