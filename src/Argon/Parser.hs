@@ -55,12 +55,14 @@ parseModuleWithCpp cppOptions file =
     GHC.runGhc (Just libdir) $ do
       dflags <- initDynFlags file
       let useCpp = GHC.xopt GHC.Opt_Cpp dflags
-      fileContents <-
+      (fileContents, dflags1) <-
         if useCpp
            then getPreprocessedSrcDirect cppOptions file
-           else GHC.liftIO $ readFile file
+           else do
+               contents <- GHC.liftIO $ readFile file
+               return (contents, dflags)
       return $
-        case parseCode dflags file fileContents of
+        case parseCode dflags1 file fileContents of
           GHC.PFailed ss m -> Left $ tagMsg (srcSpanToLoc ss)
                                             (GHC.showSDoc dflags m)
           GHC.POk _ pmod   -> Right pmod

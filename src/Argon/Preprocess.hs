@@ -1,5 +1,6 @@
--- The following code is taken from ghc-exactprint, because adding a dependency
--- for just one module seemed excessive.
+-- The following code is taken and modified from ghc-exactprint, because adding
+-- a dependency for just one module and then adding wrappers for that module
+-- seemed excessive.
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
 -- | This module provides support for CPP and interpreter directives.
@@ -17,6 +18,7 @@ import qualified GHC
 import qualified DynFlags       as GHC
 import qualified MonadUtils     as GHC
 import qualified StringBuffer   as GHC
+import qualified DriverPhases   as GHC
 import qualified DriverPipeline as GHC
 
 data CppOptions = CppOptions
@@ -29,9 +31,12 @@ data CppOptions = CppOptions
 defaultCppOptions :: CppOptions
 defaultCppOptions = CppOptions [] [] []
 
-getPreprocessedSrcDirect :: (GHC.GhcMonad m) => CppOptions -> FilePath -> m String
+getPreprocessedSrcDirect :: (GHC.GhcMonad m)
+                         => CppOptions
+                         -> FilePath
+                         -> m (String, GHC.DynFlags)
 getPreprocessedSrcDirect cppOptions src =
-    (\(a,_,_) -> a) <$> getPreprocessedSrcDirectPrim cppOptions src
+    (\(s, _, d) -> (s, d)) <$> getPreprocessedSrcDirectPrim cppOptions src
 
 getPreprocessedSrcDirectPrim :: (GHC.GhcMonad m)
                               => CppOptions
@@ -41,7 +46,8 @@ getPreprocessedSrcDirectPrim cppOptions file = do
   hscEnv <- GHC.getSession
   let dfs = GHC.extractDynFlags hscEnv
       newEnv = GHC.replaceDynFlags hscEnv (injectCppOptions cppOptions dfs)
-  (dflags', hspp_fn) <- GHC.liftIO $ GHC.preprocess newEnv (file, Nothing)
+  (dflags', hspp_fn) <-
+      GHC.liftIO $ GHC.preprocess newEnv (file, Just (GHC.Cpp GHC.HsSrcFile))
   buf <- GHC.liftIO $ GHC.hGetStringBuffer hspp_fn
   txt <- GHC.liftIO $ readFile hspp_fn
   return (txt, buf, dflags')
