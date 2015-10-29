@@ -1,5 +1,5 @@
 name:                argon
-version:             0.3.1.1
+version:             0.3.1.2
 synopsis:            Measure your code's complexity
 homepage:            http://github.com/rubik/argon
 bug-reports:         http://github.com/rubik/argon/issues
