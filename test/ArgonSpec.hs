@@ -126,7 +126,11 @@ spec = do
                 "th.hs" `shouldAnalyze` Right [CC (lo 7, "foo", 1)]
             it "works with DataKinds, GADTs, KindSignatures" $
                 "datakinds.hs" `shouldAnalyze`
-                    Right [CC (lo 16, "taskOneWorker", 1), CC (lo 20, "main", 1)]
+                    Right [ CC (lo 16, "taskOneWorker", 1)
+                          , CC (lo 20, "main", 1)]
+            it "works with ScopedTypeVariables" $
+                "scopedtypevariables.hs" `shouldAnalyze`
+                    Right [CC (lo 9, "catchNonAsync", 1)]
         describe "errors" $ do
             it "catches syntax errors" $
                 "syntaxerror.hs" `shouldAnalyze`
