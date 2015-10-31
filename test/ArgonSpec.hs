@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE StandaloneDeriving #-}
 
 module ArgonSpec (spec)
     where
@@ -131,6 +130,13 @@ spec = do
             it "works with ScopedTypeVariables" $
                 "scopedtypevariables.hs" `shouldAnalyze`
                     Right [CC (lo 9, "catchNonAsync", 1)]
+-- This will be fixed in the next version of ghc-syb-utils
+#if __GLASGOW_HASKELL__ >= 710
+            it "works with TypeFamilies" $
+                "typefamilies.hs" `shouldAnalyze` Right []
+            it "works with ForeignImport" $
+                "foreignimports.hs" `shouldAnalyze` Right []
+#endif
         describe "errors" $ do
             it "catches syntax errors" $
                 "syntaxerror.hs" `shouldAnalyze`
