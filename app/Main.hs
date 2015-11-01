@@ -5,11 +5,12 @@ module Main where
 import Data.List (foldl1', isSuffixOf)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as S
-import Data.Foldable (toList)
 #if __GLASGOW_HASKELL__ < 710
 import Data.Monoid (mappend)
 import Control.Applicative ((<$>))
 #endif
+import Pipes
+import qualified Pipes.Prelude as P
 import System.Environment (getArgs)
 import System.FilePath ((</>))
 import System.Directory
@@ -56,10 +57,20 @@ readConfig args =
                               else Colored
     }
 
+filterNulls :: (FilePath, AnalysisResult) -> Bool
+filterNulls (_, r) = case r of
+                       Left  _  -> True
+                       Right [] -> False
+                       _        -> True
+
 main :: IO ()
 main = do
     args <- parseArgsOrExit patterns =<< getArgs
     ins  <- allFiles $ args `getAllArgs` argument "paths"
-    res  <- mapM analyze $ toList ins
     let conf = readConfig args
-    putStr $ export conf $ map (filterResults conf) res
+    runEffect $ each ins
+             >-> P.mapM analyze
+             >-> P.map (filterResults conf)
+             >-> P.filter filterNulls
+             >-> P.map (export conf)
+             >-> P.stdoutLn

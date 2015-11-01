@@ -12,21 +12,21 @@ import Argon.Types
 import Argon.Loc
 
 
-bareTextFormatter :: [(FilePath, AnalysisResult)] -> String
-bareTextFormatter = formatSingle $ formatResult
+bareTextFormatter :: (FilePath, AnalysisResult) -> String
+bareTextFormatter = formatResult
     (printf "%s\n\t%s")
     (\e -> "error:" ++ e)
     (\(CC (l, func, cc)) -> printf "%s %s - %d" (locToString l) func cc)
 
-coloredTextFormatter :: [(FilePath, AnalysisResult)] -> String
-coloredTextFormatter = formatSingle $ formatResult
+coloredTextFormatter :: (FilePath, AnalysisResult) -> String
+coloredTextFormatter = formatResult
     (\name rest -> printf "%s%s%s\n\t%s%s" open name reset rest reset)
     (\e -> printf "%serror%s: %s%s" (fore Red) reset e reset)
     (\(CC (l, func, cc)) -> printf "%s %s - %s%s" (locToString l)
                                                   (coloredFunc func l)
                                                   (coloredRank cc) reset)
 
-jsonFormatter :: [(FilePath, AnalysisResult)] -> String
+jsonFormatter :: (FilePath, AnalysisResult) -> String
 jsonFormatter = B.unpack . encode
 
 open :: String

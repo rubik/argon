@@ -31,7 +31,7 @@ filterResults o (s, Right rs) =
 
 -- | Export analysis' results. How to export the data is defined by the
 --   'Config' parameter.
-export :: Config -> [(FilePath, AnalysisResult)] -> String
+export :: Config -> (FilePath, AnalysisResult) -> String
 export opts rs =
     case outputMode opts of
         BareText -> bareTextFormatter rs
