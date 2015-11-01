@@ -62,7 +62,6 @@ executable argon
                      , containers       >=0.5
                      , pipes            >=4.1
                      , pipes-aeson      >=0.4
-                     , mmorph           >=1
                      , argon            -any
   if impl(ghc < 7.10)
     build-depends:     pathwalk         >=0.3.1.2

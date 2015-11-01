@@ -49,11 +49,6 @@ coloredRank c = printf "%s%s (%d)%s" (fore color) rank c reset
             | c <= 10   = (Yellow, "B")
             | otherwise = (Red,    "C")
 
-formatSingle :: ((FilePath, AnalysisResult) -> String)
-             -> [(FilePath, AnalysisResult)]
-             -> String
-formatSingle f = unlines . filter (not . null) . map f
-
 formatResult :: (String -> String -> String)  -- ^ The block formatter
              -> (String -> String)            -- ^ The error formatter
              -> (ComplexityBlock -> String)   -- ^ The single line formatter
