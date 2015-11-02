@@ -1,9 +1,6 @@
-module Argon.Formatters (bareTextFormatter, coloredTextFormatter
-                        , jsonFormatter)
+module Argon.Formatters (bareTextFormatter, coloredTextFormatter)
     where
 
-import Data.Aeson (encode)
-import qualified Data.ByteString.Lazy.Char8 as B
 import Data.List (intercalate)
 import Text.Printf (printf)
 import System.Console.ANSI
@@ -25,9 +22,6 @@ coloredTextFormatter = formatResult
     (\(CC (l, func, cc)) -> printf "%s %s - %s%s" (locToString l)
                                                   (coloredFunc func l)
                                                   (coloredRank cc) reset)
-
-jsonFormatter :: (FilePath, AnalysisResult) -> String
-jsonFormatter = B.unpack . encode
 
 open :: String
 open = setSGRCode [SetConsoleIntensity BoldIntensity]
