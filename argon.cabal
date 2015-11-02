@@ -79,6 +79,9 @@ test-suite argon-test
                      , ansi-terminal    >=0.6
                      , aeson            >=0.8
                      , bytestring       >=0.10
+                     , pipes            >=4.1
+                     , pipes-group      >=1.0
+                     , lens-simple      >=0.1
                      , ghc              >=7.8    && <8
                      , ghc-paths        >=0.1
                      , ghc-syb-utils    >=0.2
