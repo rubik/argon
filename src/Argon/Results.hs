@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Argon.Results (order, filterResults, filterNulls, exportStream)
     where
@@ -6,6 +7,9 @@ import Data.Ord (comparing)
 import Data.List (sortBy)
 import Data.String (IsString)
 import qualified Data.ByteString.Lazy as B
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative ((<*), (*>))
+#endif
 
 import Data.Aeson (encode)
 import Pipes
@@ -52,8 +56,8 @@ exportStream :: Config
              -> Effect IO ()
 exportStream conf source =
     case outputMode conf of
-      BareText -> source >-> P.map bareTextFormatter >-> P.mapM_ putStrLn
-      Colored  -> source >-> P.map coloredTextFormatter >-> P.mapM_ putStrLn
+      BareText -> source >-> bareTextFormatter >-> P.stdoutLn
+      Colored  -> source >-> coloredTextFormatter >-> P.stdoutLn
       JSON     -> jsonStream (source >-> P.map encode) >-> P.mapM_ B.putStr
 
 jsonStream :: IsString a
