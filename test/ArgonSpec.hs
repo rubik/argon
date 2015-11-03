@@ -134,6 +134,8 @@ spec = do
                 "typefamilies.hs" `shouldAnalyze` Right []
             it "works with ForeignImport" $
                 "foreignimports.hs" `shouldAnalyze` Right []
+            it "works with Arrows" $
+                "arrows.hs" `shouldAnalyze` Right [CC (lo 7, "getAnchor", 1)]
         describe "errors" $ do
             it "catches syntax errors" $
                 "syntaxerror.hs" `shouldAnalyze`

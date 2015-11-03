@@ -28,6 +28,7 @@ everythingStaged stage k z f x
       `extQ` postTcType
       `extQ` nameList
       `extQ` coercion
+      `extQ` cmdTable
 #endif
       `extQ` fixity `extQ` nameSet) x = z
   | otherwise = foldl k (f x) (gmapQ (everythingStaged stage k z f) x)
@@ -36,5 +37,6 @@ everythingStaged stage k z f x
         postTcType = const (stage < TypeChecker)               :: PostTcType -> Bool
         nameList   = const (stage < TypeChecker)               :: [Name] -> Bool
         coercion   = const (stage < TypeChecker)               :: Coercion -> Bool
+        cmdTable   = const (stage < TypeChecker)               :: CmdSyntaxTable RdrName -> Bool
 #endif
         fixity     = const (stage < Renamer)                   :: GHC.Fixity -> Bool
