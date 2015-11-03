@@ -2,6 +2,11 @@
 
 This package uses [Semantic Versioning][1].
 
+## v0.4.0.0
+
+- Add `--cabal-macros` and `--include-dir` options: #17
+- Add streaming capabilities (haskell-pipes) for lower memory usage: #18
+
 ## v0.3.2.0
 
 - Fix error in CPP processing: #14
