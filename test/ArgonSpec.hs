@@ -114,7 +114,7 @@ spec = do
                       , CC ((103, 21), "m", 1)
                       ]
         describe "extensions" $ do
--- Not even GHC 7.8.4 is able to run the file blow, so it's not an Argon bug
+-- Not even GHC 7.8.4 is able to run the file below, so it's not an Argon bug
 #if __GLASGOW_HASKELL__ >= 710
             it "correctly applies CPP" $
                 "cpp-psyn.hs" `shouldAnalyze` Right []
@@ -130,13 +130,10 @@ spec = do
             it "works with ScopedTypeVariables" $
                 "scopedtypevariables.hs" `shouldAnalyze`
                     Right [CC (lo 9, "catchNonAsync", 1)]
--- This will be fixed in the next version of ghc-syb-utils
-#if __GLASGOW_HASKELL__ >= 710
             it "works with TypeFamilies" $
                 "typefamilies.hs" `shouldAnalyze` Right []
             it "works with ForeignImport" $
                 "foreignimports.hs" `shouldAnalyze` Right []
-#endif
         describe "errors" $ do
             it "catches syntax errors" $
                 "syntaxerror.hs" `shouldAnalyze`

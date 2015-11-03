@@ -2,7 +2,7 @@ module Argon.Visitor (funcsCC)
     where
 
 import Data.Generics (Data, Typeable, mkQ)
-import GHC.SYB.Utils (Stage(..), everythingStaged)
+import Argon.SYB.Utils (Stage(..), everythingStaged)
 import Control.Arrow ((&&&))
 
 import qualified GHC

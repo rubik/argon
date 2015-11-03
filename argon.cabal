@@ -37,6 +37,7 @@ library
                        Argon.Types
                        Argon.Preprocess
                        Argon.Loc
+                       Argon.SYB.Utils
   build-depends:       base             >=4.7    && <5
                      , ansi-terminal    >=0.6
                      , aeson            >=0.8
@@ -95,6 +96,7 @@ test-suite argon-test
                        Argon.Types
                        Argon.Preprocess
                        Argon.Loc
+                       Argon.SYB.Utils
 
 test-suite style
   type:                exitcode-stdio-1.0
