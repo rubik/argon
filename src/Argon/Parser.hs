@@ -2,6 +2,7 @@
 module Argon.Parser (LModule, analyze, parseModule)
     where
 
+import Data.List (foldl')
 import Control.Monad (void)
 import qualified Control.Exception as E
 
@@ -47,18 +48,19 @@ handleExc = return . Left . show
 -- | Parse a module with the default instructions for the C pre-processor
 -- | Only the includes directory is taken from the config
 parseModule :: Config -> FilePath -> IO (Either String LModule)
-parseModule conf = parseModuleWithCpp $
+parseModule conf = parseModuleWithCpp conf $
     defaultCppOptions { cppInclude = includeDirs conf
                       , cppFile    = headers conf
                       }
 
 -- | Parse a module with specific instructions for the C pre-processor.
-parseModuleWithCpp :: CppOptions
+parseModuleWithCpp :: Config
+                   -> CppOptions
                    -> FilePath
                    -> IO (Either String LModule)
-parseModuleWithCpp cppOptions file =
+parseModuleWithCpp conf cppOptions file =
     GHC.runGhc (Just libdir) $ do
-      dflags <- initDynFlags file
+      dflags <- initDynFlags conf file
       let useCpp = GHC.xopt GHC.Opt_Cpp dflags
       (fileContents, dflags1) <-
         if useCpp
@@ -81,12 +83,13 @@ runParser parser flags filename str = GHC.unP parser parseState
           buffer     = GHC.stringToStringBuffer str
           parseState = GHC.mkPState flags buffer location
 
-initDynFlags :: GHC.GhcMonad m => FilePath -> m GHC.DynFlags
-initDynFlags file = do
+initDynFlags :: GHC.GhcMonad m => Config -> FilePath -> m GHC.DynFlags
+initDynFlags conf file = do
     dflags0 <- GHC.getSessionDynFlags
     src_opts <- GHC.liftIO $ GHC.getOptionsFromFile dflags0 file
     (dflags1, _, _) <- GHC.parseDynamicFilePragma dflags0 src_opts
-    let dflags2 = dflags1 { GHC.log_action = customLogAction }
+    let cabalized = foldl' GHC.xopt_set dflags1 $ exts conf
+    let dflags2 = cabalized { GHC.log_action = customLogAction }
     void $ GHC.setSessionDynFlags dflags2
     return dflags2
 

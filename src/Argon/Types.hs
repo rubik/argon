@@ -15,6 +15,7 @@ import Data.Aeson
 import Data.Typeable
 import Control.Exception (Exception)
 
+import qualified DynFlags as GHC
 import Argon.Loc
 
 
@@ -37,6 +38,8 @@ type AnalysisResult = Either String [ComplexityBlock]
 data Config = Config {
     -- | Minimum complexity a block has to have to be shown in results.
     minCC       :: Int
+    -- | Path to the main Cabal file
+  , exts        :: [GHC.ExtensionFlag]
     -- | Header files to be automatically included before preprocessing
   , headers     :: [FilePath]
     -- | Additional include directories for the C preprocessor
@@ -56,6 +59,7 @@ data OutputMode = BareText -- ^ Text-only output, no colors.
 -- | __Warning__: These are not Argon's default options.
 defaultConfig :: Config
 defaultConfig = Config { minCC       = 1
+                       , exts        = []
                        , headers     = []
                        , includeDirs = []
                        , outputMode  = JSON

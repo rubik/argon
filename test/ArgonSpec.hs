@@ -77,7 +77,7 @@ spec = do
                 property $ \xs -> order xs == order (order xs)
         describe "filterResults" $ do
             it "discards results with too low complexity" $
-                filterResults (Config 3 [] [] BareText )
+                filterResults (Config 3 [] [] [] BareText )
                               ("p", Right [ CC (ones, "f", 3)
                                           , CC (lo 2, "g", 2)
                                           , CC (lo 4, "h", 10)
@@ -86,7 +86,7 @@ spec = do
                               ("p", Right [ CC (lo 4, "h", 10)
                                           , CC (ones, "f", 3)])
             it "does nothing on Left" $
-                property $ \m o p err -> filterResults (Config m [] [] o)
+                property $ \m o p err -> filterResults (Config m [] [] [] o)
                                                        (p, Left err) ==
                                                        (p, Left err)
     describe "analyze" $ do

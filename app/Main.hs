@@ -2,9 +2,9 @@
 {-# LANGUAGE QuasiQuotes #-}
 module Main where
 
-import Data.List (foldl1', isSuffixOf)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as S
+import Data.List (foldl1', isSuffixOf)
 #if __GLASGOW_HASKELL__ < 710
 import Data.Monoid (mappend)
 import Control.Applicative ((<$>))
@@ -46,10 +46,12 @@ descend path = do
 allFiles :: [FilePath] -> IO (Seq FilePath)
 allFiles paths = foldl1' mappend <$> mapM descend paths
 
-readConfig :: Arguments -> Config
-readConfig args =
-    Config {
+readConfig :: Arguments -> IO Config
+readConfig args = do
+    xFlags <- maybe (return []) parseExts $ getArg args $ longOption "cabal-file"
+    return Config {
       minCC       = read $ getOpt args "1" "min"
+    , exts        = xFlags
     , headers     = args `getAllArgs` longOption "cabal-macros"
     , includeDirs = args `getAllArgs` longOption "include-dir"
     , outputMode  = if args `isPresent` longOption "json"
@@ -63,8 +65,8 @@ main :: IO ()
 main = do
     args <- parseArgsOrExit patterns =<< getArgs
     ins  <- allFiles $ args `getAllArgs` argument "paths"
-    let conf = readConfig args
-        source = each ins
+    conf <- readConfig args
+    let source = each ins
               >-> P.mapM (analyze conf)
               >-> P.map (filterResults conf)
               >-> P.filter filterNulls
