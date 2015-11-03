@@ -2,7 +2,9 @@ Usage:
     argon [options] <paths>...
 
 Options:
-    -h --help       show this help
-    -m --min=<n>    the minimum complexity to show in results
-    --no-color      results are not colored
-    -j --json       results are serialized to JSON
+    -h --help                   show this help
+    -m --min=<n>                the minimum complexity to show in results
+    --cabal-macros=<path>       Cabal header file with versions macros
+    -I --include-dir=<path>     additional directory with header files
+    --no-color                  results are not colored
+    -j --json                   results are serialized to JSON

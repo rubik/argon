@@ -29,11 +29,12 @@ type LModule = GHC.Located (GHC.HsModule GHC.RdrName)
 
 -- | Parse the code in the given filename and compute cyclomatic complexity for
 --   every function binding.
-analyze :: FilePath  -- ^ The filename corresponding to the source code
+analyze :: Config    -- ^ Configuration options
+        -> FilePath  -- ^ The filename corresponding to the source code
         -> IO (FilePath, AnalysisResult)
-analyze file = do
+analyze conf file = do
     parseResult <- (do
-        result <- parseModule file
+        result <- parseModule conf file
         E.evaluate result) `E.catch` handleExc
     let analysis = case parseResult of
                       Left err  -> Left err
@@ -44,8 +45,12 @@ handleExc :: E.SomeException -> IO (Either String LModule)
 handleExc = return . Left . show
 
 -- | Parse a module with the default instructions for the C pre-processor
-parseModule :: FilePath -> IO (Either String LModule)
-parseModule = parseModuleWithCpp defaultCppOptions
+-- | Only the includes directory is taken from the config
+parseModule :: Config -> FilePath -> IO (Either String LModule)
+parseModule conf = parseModuleWithCpp $
+    defaultCppOptions { cppInclude = includeDirs conf
+                      , cppFile    = headers conf
+                      }
 
 -- | Parse a module with specific instructions for the C pre-processor.
 parseModuleWithCpp :: CppOptions

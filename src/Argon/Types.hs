@@ -7,7 +7,7 @@
 #endif
 
 module Argon.Types (ComplexityBlock(CC), AnalysisResult, Config(..)
-                   , OutputMode(..), GhcParseError(..))
+                   , OutputMode(..), GhcParseError(..), defaultConfig)
     where
 
 import Data.List (intercalate)
@@ -36,9 +36,13 @@ type AnalysisResult = Either String [ComplexityBlock]
 -- | Type holding all the options passed from the command line.
 data Config = Config {
     -- | Minimum complexity a block has to have to be shown in results.
-    minCC :: Int
+    minCC       :: Int
+    -- | Header files to be automatically included before preprocessing
+  , headers     :: [FilePath]
+    -- | Additional include directories for the C preprocessor
+  , includeDirs :: [FilePath]
     -- | Describe how the results should be exported.
-  , outputMode :: OutputMode
+  , outputMode  :: OutputMode
   }
 
 -- | Type describing how the results should be exported.
@@ -46,6 +50,16 @@ data OutputMode = BareText -- ^ Text-only output, no colors.
                 | Colored  -- ^ Text-only output, with colors.
                 | JSON     -- ^ Data is serialized to JSON.
                 deriving (Show, Eq)
+
+-- | Default configuration options.
+-- |
+-- | __Warning__: These are not Argon's default options.
+defaultConfig :: Config
+defaultConfig = Config { minCC       = 1
+                       , headers     = []
+                       , includeDirs = []
+                       , outputMode  = JSON
+                       }
 
 instance Exception GhcParseError
 

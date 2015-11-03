@@ -41,7 +41,7 @@ path :: String -> FilePath
 path f = "test" </> "data" </> f
 
 shouldAnalyze :: String -> AnalysisResult -> Expectation
-shouldAnalyze f r = analyze p `shouldReturn` (p, r)
+shouldAnalyze f r = analyze defaultConfig p `shouldReturn` (p, r)
     where p = path f
 
 spec :: Spec
@@ -77,7 +77,7 @@ spec = do
                 property $ \xs -> order xs == order (order xs)
         describe "filterResults" $ do
             it "discards results with too low complexity" $
-                filterResults (Config { minCC = 3, outputMode = BareText })
+                filterResults (Config 3 [] [] BareText )
                               ("p", Right [ CC (ones, "f", 3)
                                           , CC (lo 2, "g", 2)
                                           , CC (lo 4, "h", 10)
@@ -86,7 +86,7 @@ spec = do
                               ("p", Right [ CC (lo 4, "h", 10)
                                           , CC (ones, "f", 3)])
             it "does nothing on Left" $
-                property $ \m o p err -> filterResults (Config m o)
+                property $ \m o p err -> filterResults (Config m [] [] o)
                                                        (p, Left err) ==
                                                        (p, Left err)
     describe "analyze" $ do
@@ -140,7 +140,8 @@ spec = do
                     Left ("2:1 parse error (possibly incorrect indentation" ++
                           " or mismatched brackets)")
             it "catches CPP parsing errors" $
-                unsafePerformIO (analyze (path "cpp-error.hs")) `shouldSatisfy`
+                unsafePerformIO (analyze defaultConfig (path "cpp-error.hs"))
+                `shouldSatisfy`
                 \(_, res) ->
                     isLeft res && ("2:0  error: unterminated #else"
                                    `isPrefixOf` head (lefts [res]))

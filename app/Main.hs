@@ -48,18 +48,20 @@ allFiles paths = foldl1' mappend <$> mapM descend paths
 readConfig :: Arguments -> Config
 readConfig args =
     Config {
-      minCC      = read $ getOpt args "1" "min"
-    , outputMode = if args `isPresent` longOption "json"
-                      then JSON
-                      else if args `isPresent` longOption "no-color"
-                              then BareText
-                              else Colored
+      minCC       = read $ getOpt args "1" "min"
+    , headers     = args `getAllArgs` longOption "cabal-macros"
+    , includeDirs = args `getAllArgs` longOption "include-dir"
+    , outputMode  = if args `isPresent` longOption "json"
+                       then JSON
+                       else if args `isPresent` longOption "no-color"
+                               then BareText
+                               else Colored
     }
 
 main :: IO ()
 main = do
     args <- parseArgsOrExit patterns =<< getArgs
     ins  <- allFiles $ args `getAllArgs` argument "paths"
-    res  <- mapM analyze $ toList ins
     let conf = readConfig args
+    res  <- mapM (analyze conf) $ toList ins
     putStr $ export conf $ map (filterResults conf) res

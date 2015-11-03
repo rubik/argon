@@ -14,6 +14,7 @@ module Argon
     , ComplexityBlock(CC)
     , OutputMode(..)
     , Config(..)
+    , defaultConfig
     , Loc
     , LModule
     -- * Parsing
