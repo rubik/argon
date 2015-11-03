@@ -5,6 +5,7 @@ This package uses [Semantic Versioning][1].
 ## v0.3.2.0
 
 - Fix error in CPP processing: #14
+- Include updated `everythingStaged` code (by @alanz): #20
 
 ## v0.3.1.2
 
