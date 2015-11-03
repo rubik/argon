@@ -7,4 +7,6 @@ extra-deps:
 - pathwalk-0.3.1.2
 - syb-0.4.4
 - ghc-7.8.4
+- lens-simple-0.1.0.8
+- lens-family-1.2.0
 resolver: lts-2.22

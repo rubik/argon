@@ -23,10 +23,11 @@ module Argon
     -- * Manipulating results
     , order
     , filterResults
-    , export
+    , filterNulls
+    , exportStream
     ) where
 
 import Argon.Parser (LModule, analyze, parseModule)
-import Argon.Results (order, export, filterResults)
+import Argon.Results (order, filterResults, filterNulls, exportStream)
 import Argon.Types
 import Argon.Loc

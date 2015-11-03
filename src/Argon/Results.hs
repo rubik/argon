@@ -1,9 +1,22 @@
 {-# LANGUAGE CPP #-}
-module Argon.Results (order, filterResults, export)
+{-# LANGUAGE OverloadedStrings #-}
+module Argon.Results (order, filterResults, filterNulls, exportStream)
     where
 
 import Data.Ord (comparing)
 import Data.List (sortBy)
+import Data.String (IsString)
+import qualified Data.ByteString.Lazy as B
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative ((<*), (*>))
+#endif
+
+import Data.Aeson (encode)
+import Pipes
+import Pipes.Group
+import qualified Pipes.Prelude as P
+import Lens.Simple ((^.))
+
 import Argon.Formatters
 import Argon.Types
 
@@ -21,6 +34,12 @@ sortOn f =
 order :: [ComplexityBlock] -> [ComplexityBlock]
 order = sortOn (\(CC ((l, _), f, cc)) -> (-cc, l, f))
 
+filterNulls :: (FilePath, AnalysisResult) -> Bool
+filterNulls (_, r) = case r of
+                       Left  _  -> True
+                       Right [] -> False
+                       _        -> True
+
 -- | Filter the results of the analysis, with respect to the given
 --   'Config'.
 filterResults :: Config
@@ -32,9 +51,19 @@ filterResults o (s, Right rs) =
 
 -- | Export analysis' results. How to export the data is defined by the
 --   'Config' parameter.
-export :: Config -> [(FilePath, AnalysisResult)] -> String
-export opts rs =
-    case outputMode opts of
-        BareText -> bareTextFormatter rs
-        Colored  -> coloredTextFormatter rs
-        JSON     -> jsonFormatter rs
+exportStream :: Config
+             -> Producer (FilePath, AnalysisResult) IO ()
+             -> Effect IO ()
+exportStream conf source =
+    case outputMode conf of
+      BareText -> source >-> bareTextFormatter >-> P.stdoutLn
+      Colored  -> source >-> coloredTextFormatter >-> P.stdoutLn
+      JSON     -> jsonStream (source >-> P.map encode) >-> P.mapM_ B.putStr
+
+jsonStream :: IsString a
+           => Producer a IO ()
+           -> Producer a IO ()
+jsonStream source = yield "[" *> intersperse' "," source <* yield "]\n"
+
+intersperse' :: Monad m => a -> Producer a m r -> Producer a m r
+intersperse' a producer = intercalates (yield a) (producer ^. chunksOf 1)

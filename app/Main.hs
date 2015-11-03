@@ -5,11 +5,12 @@ module Main where
 import Data.List (foldl1', isSuffixOf)
 import Data.Sequence (Seq)
 import qualified Data.Sequence as S
-import Data.Foldable (toList)
 #if __GLASGOW_HASKELL__ < 710
 import Data.Monoid (mappend)
 import Control.Applicative ((<$>))
 #endif
+import Pipes
+import qualified Pipes.Prelude as P
 import System.Environment (getArgs)
 import System.FilePath ((</>))
 import System.Directory
@@ -63,5 +64,8 @@ main = do
     args <- parseArgsOrExit patterns =<< getArgs
     ins  <- allFiles $ args `getAllArgs` argument "paths"
     let conf = readConfig args
-    res  <- mapM (analyze conf) $ toList ins
-    putStr $ export conf $ map (filterResults conf) res
+        source = each ins
+              >-> P.mapM (analyze conf)
+              >-> P.map (filterResults conf)
+              >-> P.filter filterNulls
+    runEffect $ exportStream conf source

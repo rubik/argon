@@ -1,33 +1,30 @@
-module Argon.Formatters (bareTextFormatter, coloredTextFormatter
-                        , jsonFormatter)
+{-# LANGUAGE LambdaCase #-}
+module Argon.Formatters (bareTextFormatter, coloredTextFormatter)
     where
 
-import Data.Aeson (encode)
-import qualified Data.ByteString.Lazy.Char8 as B
-import Data.List (intercalate)
 import Text.Printf (printf)
 import System.Console.ANSI
+
+import Pipes
+import qualified Pipes.Prelude as P
 
 import Argon.Types
 import Argon.Loc
 
 
-bareTextFormatter :: [(FilePath, AnalysisResult)] -> String
-bareTextFormatter = formatSingle $ formatResult
-    (printf "%s\n\t%s")
-    (\e -> "error:" ++ e)
-    (\(CC (l, func, cc)) -> printf "%s %s - %d" (locToString l) func cc)
+bareTextFormatter :: Pipe (FilePath, AnalysisResult) String IO ()
+bareTextFormatter = formatResult
+    id
+    ("\terror:" ++)
+    (\(CC (l, func, cc)) -> printf "\t%s %s - %d" (locToString l) func cc)
 
-coloredTextFormatter :: [(FilePath, AnalysisResult)] -> String
-coloredTextFormatter = formatSingle $ formatResult
-    (\name rest -> printf "%s%s%s\n\t%s%s" open name reset rest reset)
-    (\e -> printf "%serror%s: %s%s" (fore Red) reset e reset)
-    (\(CC (l, func, cc)) -> printf "%s %s - %s%s" (locToString l)
-                                                  (coloredFunc func l)
-                                                  (coloredRank cc) reset)
-
-jsonFormatter :: [(FilePath, AnalysisResult)] -> String
-jsonFormatter = B.unpack . encode
+coloredTextFormatter :: Pipe (FilePath, AnalysisResult) String IO ()
+coloredTextFormatter = formatResult
+    (\name -> open ++ name ++ reset)
+    (printf "\t%serror%s: %s" (fore Red) reset)
+    (\(CC (l, func, cc)) -> printf "\t%s %s - %s%s" (locToString l)
+                                                    (coloredFunc func l)
+                                                    (coloredRank cc) reset)
 
 open :: String
 open = setSGRCode [SetConsoleIntensity BoldIntensity]
@@ -49,17 +46,14 @@ coloredRank c = printf "%s%s (%d)%s" (fore color) rank c reset
             | c <= 10   = (Yellow, "B")
             | otherwise = (Red,    "C")
 
-formatSingle :: ((FilePath, AnalysisResult) -> String)
-             -> [(FilePath, AnalysisResult)]
-             -> String
-formatSingle f = unlines . filter (not . null) . map f
-
-formatResult :: (String -> String -> String)  -- ^ The block formatter
+formatResult :: (String -> String)            -- ^ The header formatter
              -> (String -> String)            -- ^ The error formatter
              -> (ComplexityBlock -> String)   -- ^ The single line formatter
-             -> (FilePath, AnalysisResult) -> String
-formatResult resultBlock errorF _ (name, Left err) =
-    resultBlock name $ errorF err
-formatResult _ _ _ (_,    Right []) = ""
-formatResult resultBlock _ singleF (name, Right rs) =
-    resultBlock name $ intercalate "\n\t" $ map singleF rs
+             -> Pipe (FilePath, AnalysisResult) String IO ()
+formatResult header errorF singleF = for cat $ \case
+    (path, Left err) -> do
+        yield $ header path
+        yield $ errorF err
+    (path, Right rs) -> do
+        yield $ header path
+        each rs >-> P.map singleF
