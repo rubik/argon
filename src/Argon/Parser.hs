@@ -46,7 +46,7 @@ handleExc :: E.SomeException -> IO (Either String LModule)
 handleExc = return . Left . show
 
 -- | Parse a module with the default instructions for the C pre-processor
--- | Only the includes directory is taken from the config
+--   Only the includes directory is taken from the config
 parseModule :: Config -> FilePath -> IO (Either String LModule)
 parseModule conf = parseModuleWithCpp conf $
     defaultCppOptions { cppInclude = includeDirs conf

@@ -23,8 +23,8 @@ flagsMap :: Map String GHC.ExtensionFlag
 flagsMap = M.fromList $ map specToPair GHC.xFlags
 
 -- | Parse the given Cabal file generate a list of GHC extension flags. The
--- | extension names are read from the default-extensions field in the library
--- | section.
+--   extension names are read from the default-extensions field in the library
+--   section.
 parseExts :: FilePath -> IO [GHC.ExtensionFlag]
 parseExts path = do
     pkg <- Dist.readPackageDescription Dist.silent path
@@ -34,7 +34,7 @@ extFromBI :: Dist.BuildInfo -> [GHC.ExtensionFlag]
 extFromBI = mapMaybe (get . toString) . Dist.defaultExtensions
     where get = flip M.lookup flagsMap
           toString (Dist.UnknownExtension ext) = ext
-          toString (Dist.EnableExtension ext) = show ext
+          toString (Dist.EnableExtension  ext) = show ext
           toString (Dist.DisableExtension ext) = show ext
 
 #if __GLASGOW_HASKELL__ < 710

@@ -34,6 +34,8 @@ sortOn f =
 order :: [ComplexityBlock] -> [ComplexityBlock]
 order = sortOn (\(CC ((l, _), f, cc)) -> (-cc, l, f))
 
+-- | A result is discarded if it correspond to a successful analysis and there
+--   are no blocks to show
 filterNulls :: (FilePath, AnalysisResult) -> Bool
 filterNulls (_, r) = case r of
                        Left  _  -> True

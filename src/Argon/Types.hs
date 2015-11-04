@@ -55,8 +55,8 @@ data OutputMode = BareText -- ^ Text-only output, no colors.
                 deriving (Show, Eq)
 
 -- | Default configuration options.
--- |
--- | __Warning__: These are not Argon's default options.
+--
+--   __Warning__: These are not Argon's default options.
 defaultConfig :: Config
 defaultConfig = Config { minCC       = 1
                        , exts        = []
