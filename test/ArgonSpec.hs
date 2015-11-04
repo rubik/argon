@@ -4,6 +4,7 @@
 module ArgonSpec (spec)
     where
 
+import Data.Foldable (toList)
 import Data.List (sort, isPrefixOf)
 import Data.Either (isLeft, lefts)
 import qualified Data.Sequence as S
@@ -45,6 +46,9 @@ path f = "test" </> "data" </> f
 shouldAnalyze :: String -> AnalysisResult -> Expectation
 shouldAnalyze f r = analyze defaultConfig p `shouldReturn` (p, r)
     where p = path f
+
+shouldReturnS :: IO (S.Seq FilePath) -> [FilePath] -> Expectation
+shouldReturnS action res = action >>= ((`shouldBe` (sort res)) . sort . toList)
 
 spec :: Spec
 spec = do
@@ -152,13 +156,13 @@ spec = do
     describe "Argon.Walker" $
         describe "allFiles" $ do
             it "traverses the filesystem with reversed DFS" $
-                allFiles ["test" </> "tree"] `shouldReturn`
-                    S.fromList [ "test" </> "tree" </> "a.hs"
-                               , "test" </> "tree" </> "sub2" </> "e.hs"
-                               , "test" </> "tree" </> "sub2" </> "a.hs"
-                               , "test" </> "tree" </> "sub"  </> "c.hs"
-                               , "test" </> "tree" </> "sub"  </> "b.hs"
-                               ]
+                allFiles ["test" </> "tree"] `shouldReturnS`
+                    [ "test" </> "tree" </> "a.hs"
+                    , "test" </> "tree" </> "sub2" </> "e.hs"
+                    , "test" </> "tree" </> "sub2" </> "a.hs"
+                    , "test" </> "tree" </> "sub"  </> "c.hs"
+                    , "test" </> "tree" </> "sub"  </> "b.hs"
+                    ]
             it "includes starting files in the result" $
-                allFiles ["test" </> "tree" </> "a.hs"] `shouldReturn`
-                    S.fromList ["test" </> "tree" </> "a.hs"]
+                allFiles ["test" </> "tree" </> "a.hs"] `shouldReturnS`
+                    ["test" </> "tree" </> "a.hs"]
