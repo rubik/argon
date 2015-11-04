@@ -19,7 +19,6 @@ import qualified SrcLoc     as GHC
 import qualified FastString as GHC
 
 import Argon
-import Argon.Loc
 
 instance Arbitrary ComplexityBlock where
     arbitrary = (\a b c -> CC (a, b, c)) <$> arbitrary

@@ -29,6 +29,10 @@ module Argon
     , filterResults
     , filterNulls
     , exportStream
+    -- * Utilities
+    , srcSpanToLoc
+    , locToString
+    , tagMsg
     ) where
 
 import Argon.Parser (LModule, analyze, parseModule)
