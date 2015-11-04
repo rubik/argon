@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-module Argon.Cabal
+module Argon.Cabal (flagsMap, parseExts)
     where
 
 import Data.Maybe (mapMaybe)
@@ -18,9 +18,13 @@ import qualified Distribution.PackageDescription       as Dist
 import qualified Distribution.PackageDescription.Parse as Dist
 
 
+-- | A 'Map' from extensions names to extensions flags
 flagsMap :: Map String GHC.ExtensionFlag
 flagsMap = M.fromList $ map specToPair GHC.xFlags
 
+-- | Parse the given Cabal file generate a list of GHC extension flags. The
+-- | extension names are read from the default-extensions field in the library
+-- | section.
 parseExts :: FilePath -> IO [GHC.ExtensionFlag]
 parseExts path = do
     pkg <- Dist.readPackageDescription Dist.silent path
