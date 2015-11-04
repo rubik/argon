@@ -17,6 +17,8 @@ module Argon
     , defaultConfig
     , Loc
     , LModule
+    -- * Gathering source files
+    , allFiles
     -- * Parsing
     , analyze
     , parseModule
@@ -34,3 +36,4 @@ import Argon.Results (order, filterResults, filterNulls, exportStream)
 import Argon.Cabal (flagsMap, parseExts)
 import Argon.Types
 import Argon.Loc
+import Argon.Walker (allFiles)

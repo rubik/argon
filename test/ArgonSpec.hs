@@ -6,6 +6,7 @@ module ArgonSpec (spec)
 
 import Data.List (sort, isPrefixOf)
 import Data.Either (isLeft, lefts)
+import qualified Data.Sequence as S
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative ((<$>), (<*>))
 #endif
@@ -15,6 +16,7 @@ import System.FilePath ((</>))
 import System.IO.Unsafe (unsafePerformIO)
 import qualified SrcLoc     as GHC
 import qualified FastString as GHC
+
 import Argon
 import Argon.Loc
 
@@ -147,3 +149,16 @@ spec = do
                 \(_, res) ->
                     isLeft res && ("2:0  error: unterminated #else"
                                    `isPrefixOf` head (lefts [res]))
+    describe "Argon.Walker" $
+        describe "allFiles" $ do
+            it "traverses the filesystem with reversed DFS" $
+                allFiles ["test" </> "tree"] `shouldReturn`
+                    S.fromList [ "test" </> "tree" </> "a.hs"
+                               , "test" </> "tree" </> "sub2" </> "e.hs"
+                               , "test" </> "tree" </> "sub2" </> "a.hs"
+                               , "test" </> "tree" </> "sub"  </> "c.hs"
+                               , "test" </> "tree" </> "sub"  </> "b.hs"
+                               ]
+            it "includes starting files in the result" $
+                allFiles ["test" </> "tree" </> "a.hs"] `shouldReturn`
+                    S.fromList ["test" </> "tree" </> "a.hs"]

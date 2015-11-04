@@ -26,9 +26,9 @@ flagsMap = M.fromList $ map specToPair GHC.xFlags
 --   extension names are read from the default-extensions field in the library
 --   section.
 parseExts :: FilePath -> IO [GHC.ExtensionFlag]
-parseExts path = do
-    pkg <- Dist.readPackageDescription Dist.silent path
-    return . maybe [] extFromBI $ (Dist.libBuildInfo . Dist.condTreeData) <$> Dist.condLibrary pkg
+parseExts path = extract <$> Dist.readPackageDescription Dist.silent path
+    where extract pkg = maybe [] extFromBI $
+            (Dist.libBuildInfo . Dist.condTreeData) <$> Dist.condLibrary pkg
 
 extFromBI :: Dist.BuildInfo -> [GHC.ExtensionFlag]
 extFromBI = mapMaybe (get . toString) . Dist.defaultExtensions
