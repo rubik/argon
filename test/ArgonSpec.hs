@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module ArgonSpec (spec)
     where
@@ -7,6 +8,8 @@ module ArgonSpec (spec)
 import Data.Foldable (toList)
 import Data.List (sort, isPrefixOf)
 import Data.Either (isLeft, lefts)
+import Data.Aeson (encode)
+import Text.Printf (printf)
 import qualified Data.Sequence as S
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative ((<$>), (<*>))
@@ -51,49 +54,6 @@ shouldReturnS action res = action >>= ((`shouldBe` (sort res)) . sort . toList)
 
 spec :: Spec
 spec = do
-    describe "Argon.Loc" $ do
-        describe "srcSpanToLoc" $ do
-            it "can convert a real src span to loc" $
-                property $ \a b -> srcSpanToLoc (realSpan a b) == (a, b)
-            it "can convert a bad src span to loc" $
-                srcSpanToLoc GHC.noSrcSpan `shouldBe` (0, 0)
-        describe "locToString" $
-            it "can convert a loc to string" $
-                locToString (1, 30) `shouldBe` "1:30"
-        describe "tagMsg" $
-            it "can tag messages" $
-                tagMsg (2, 3) "my custom msg" `shouldBe` "2:3 my custom msg"
-    describe "Argon.Results" $ do
-        describe "order" $ do
-            it "does not error on empty list" $
-                order [] `shouldBe` []
-            it "orders by complexity (descending)" $
-                order [CC (ones, "f", 1), CC (lo 2, "f", 2)] `shouldBe`
-                    [CC (lo 2, "f", 2), CC (ones, "f", 1)]
-            it "orders by lines (ascending)" $
-                order [CC (lo 11, "f", 3), CC (ones, "f", 3)] `shouldBe`
-                    [CC (ones, "f", 3), CC (lo 11, "f", 3)]
-            it "orders by function name (ascending)" $
-                order [CC (lo 11, "g", 3), CC (lo 11, "f", 3)] `shouldBe`
-                    [CC (lo 11, "f", 3), CC (lo 11, "g", 3)]
-            it "does not add or remove elements" $
-                property $ \xs -> sort xs == sort (order xs)
-            it "is idempotent" $
-                property $ \xs -> order xs == order (order xs)
-        describe "filterResults" $ do
-            it "discards results with too low complexity" $
-                filterResults (Config 3 [] [] [] BareText )
-                              ("p", Right [ CC (ones, "f", 3)
-                                          , CC (lo 2, "g", 2)
-                                          , CC (lo 4, "h", 10)
-                                          , CC (lo 3, "l", 1)])
-                              `shouldBe`
-                              ("p", Right [ CC (lo 4, "h", 10)
-                                          , CC (ones, "f", 3)])
-            it "does nothing on Left" $
-                property $ \m o p err -> filterResults (Config m [] [] [] o)
-                                                       (p, Left err) ==
-                                                       (p, Left err)
     describe "analyze" $ do
         it "accounts for case" $
             "case.hs" `shouldAnalyze` Right [CC (ones, "func", 3)]
@@ -152,6 +112,56 @@ spec = do
                 \(_, res) ->
                     isLeft res && ("2:0  error: unterminated #else"
                                    `isPrefixOf` head (lefts [res]))
+    describe "Argon.Loc" $ do
+        describe "srcSpanToLoc" $ do
+            it "can convert a real src span to loc" $
+                property $ \a b -> srcSpanToLoc (realSpan a b) == (a, b)
+            it "can convert a bad src span to loc" $
+                srcSpanToLoc GHC.noSrcSpan `shouldBe` (0, 0)
+        describe "locToString" $
+            it "can convert a loc to string" $
+                locToString (1, 30) `shouldBe` "1:30"
+        describe "tagMsg" $
+            it "can tag messages" $
+                tagMsg (2, 3) "my custom msg" `shouldBe` "2:3 my custom msg"
+    describe "Argon.Results" $ do
+        describe "order" $ do
+            it "does not error on empty list" $
+                order [] `shouldBe` []
+            it "orders by complexity (descending)" $
+                order [CC (ones, "f", 1), CC (lo 2, "f", 2)] `shouldBe`
+                    [CC (lo 2, "f", 2), CC (ones, "f", 1)]
+            it "orders by lines (ascending)" $
+                order [CC (lo 11, "f", 3), CC (ones, "f", 3)] `shouldBe`
+                    [CC (ones, "f", 3), CC (lo 11, "f", 3)]
+            it "orders by function name (ascending)" $
+                order [CC (lo 11, "g", 3), CC (lo 11, "f", 3)] `shouldBe`
+                    [CC (lo 11, "f", 3), CC (lo 11, "g", 3)]
+            it "does not add or remove elements" $
+                property $ \xs -> sort xs == sort (order xs)
+            it "is idempotent" $
+                property $ \xs -> order xs == order (order xs)
+        describe "filterNulls" $ do
+            it "allows errors" $
+                filterNulls ("", Left "err") `shouldBe` True
+            it "disallows empty results" $
+                filterNulls ("", Right []) `shouldBe` False
+            it "always allows non-empty results" $
+                property $ \x -> filterNulls ("", Right [x]) == True
+        describe "filterResults" $ do
+            it "discards results with too low complexity" $
+                filterResults (Config 3 [] [] [] BareText )
+                              ("p", Right [ CC (ones, "f", 3)
+                                          , CC (lo 2, "g", 2)
+                                          , CC (lo 4, "h", 10)
+                                          , CC (lo 3, "l", 1)])
+                              `shouldBe`
+                              ("p", Right [ CC (lo 4, "h", 10)
+                                          , CC (ones, "f", 3)])
+            it "does nothing on Left" $
+                property $ \m o p err -> filterResults (Config m [] [] [] o)
+                                                       (p, Left err) ==
+                                                       (p, Left err)
     describe "Argon.Walker" $
         describe "allFiles" $ do
             it "traverses the filesystem with reversed DFS" $
@@ -163,5 +173,33 @@ spec = do
                     , "test" </> "tree" </> "sub"  </> "b.hs"
                     ]
             it "includes starting files in the result" $
-                allFiles ["test" </> "tree" </> "a.hs"] `shouldReturnS`
+                allFiles [ "test" </> "tree" </> "a.hs"
+                         , "test" </> "tree" </> "a.txt"] `shouldReturnS`
                     ["test" </> "tree" </> "a.hs"]
+    describe "Argon.Types" $ do
+        describe "ComplexityBlock" $ do
+            it "implements Show correctly" $
+                show (CC ((2, 3), "bla bla", 32)) `shouldBe`
+                    printf "CC ((2,3),%s,32)" (show ("bla bla" :: String))
+            it "implements Eq correctly" $
+                CC ((1, 4), "fun", 13) `shouldBe` CC ((1, 4), "fun", 13)
+            it "implements Ord correctly" $
+                CC (lo 1, "g", 2) < CC (lo 2, "f", 1) `shouldBe` True
+        describe "OutputMode" $ do
+            it "implements Show correctly" $
+                show [JSON, Colored, BareText] `shouldBe`
+                    "[JSON,Colored,BareText]"
+            it "implements Eq correctly" $
+                [JSON, Colored, BareText] `shouldBe` [JSON, Colored, BareText]
+        describe "ToJSON instance" $ do
+            it "is implemented by ComplexityResult" $
+                encode (CC ((1, 3), "f", 4)) `shouldBe`
+                    "{\"complexity\":4,\"name\":\"f\",\"lineno\":1,\"col\":3}"
+            it "is implemented by (FilePath, AnalysisResult)" $
+                encode ("f.hs" :: String, Right [] :: AnalysisResult)
+                    `shouldBe`
+                    "{\"blocks\":[],\"path\":\"f.hs\",\"type\":\"result\"}"
+            it "is implemented by (FilePath, AnalysisResult) II" $
+                encode ("f.hs" :: String, Left "err" :: AnalysisResult)
+                    `shouldBe`
+                    "{\"path\":\"f.hs\",\"type\":\"error\",\"message\":\"err\"}"
