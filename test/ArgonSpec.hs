@@ -9,7 +9,6 @@ import Data.Foldable (toList)
 import Data.List (sort, isPrefixOf)
 import Data.Either (isLeft, lefts)
 import Data.Aeson (encode)
-import Text.Printf (printf)
 import qualified Data.Sequence as S
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative ((<$>), (<*>))
@@ -180,7 +179,7 @@ spec = do
         describe "ComplexityBlock" $ do
             it "implements Show correctly" $
                 show (CC ((2, 3), "bla bla", 32)) `shouldBe`
-                    printf "CC ((2,3),%s,32)" (show ("bla bla" :: String))
+                    "CC ((2,3),\"bla bla\",32)"
             it "implements Eq correctly" $
                 CC ((1, 4), "fun", 13) `shouldBe` CC ((1, 4), "fun", 13)
             it "implements Ord correctly" $
