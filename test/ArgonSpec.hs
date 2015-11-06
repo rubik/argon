@@ -9,7 +9,6 @@ import Data.Foldable (toList)
 import Data.List (sort, isPrefixOf)
 import Data.Either (isLeft, lefts)
 import Data.Aeson (encode)
-import qualified Data.Sequence as S
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative ((<$>), (<*>))
 #endif
@@ -19,6 +18,9 @@ import System.FilePath ((</>))
 import System.IO.Unsafe (unsafePerformIO)
 import qualified SrcLoc     as GHC
 import qualified FastString as GHC
+import Pipes
+import Pipes.Safe (MonadSafe, runSafeT)
+import Pipes.Parse (evalStateT, drawAll)
 
 import Argon
 
@@ -48,8 +50,12 @@ shouldAnalyze :: String -> AnalysisResult -> Expectation
 shouldAnalyze f r = analyze defaultConfig p `shouldReturn` (p, r)
     where p = path f
 
-shouldReturnS :: IO (S.Seq FilePath) -> [FilePath] -> Expectation
-shouldReturnS action res = action >>= ((`shouldBe` (sort res)) . sort . toList)
+shouldReturnP :: (MonadIO m, MonadSafe m)
+              => IO (Producer FilePath m ()) -> [FilePath] -> Expectation
+shouldReturnP action res = do
+    prod <- action
+    let paths = runSafeT $ evalStateT drawAll prod
+    paths `shouldBe` res
 
 spec :: Spec
 spec = do
@@ -164,7 +170,7 @@ spec = do
     describe "Argon.Walker" $
         describe "allFiles" $ do
             it "traverses the filesystem with reversed DFS" $
-                allFiles ["test" </> "tree"] `shouldReturnS`
+                allFiles ("test" </> "tree") `shouldReturnP`
                     [ "test" </> "tree" </> "a.hs"
                     , "test" </> "tree" </> "sub2" </> "e.hs"
                     , "test" </> "tree" </> "sub2" </> "a.hs"
@@ -172,8 +178,7 @@ spec = do
                     , "test" </> "tree" </> "sub"  </> "b.hs"
                     ]
             it "includes starting files in the result" $
-                allFiles [ "test" </> "tree" </> "a.hs"
-                         , "test" </> "tree" </> "a.txt"] `shouldReturnS`
+                allFiles ("test" </> "tree" </> "a.hs") `shouldReturnP`
                     ["test" </> "tree" </> "a.hs"]
     describe "Argon.Types" $ do
         describe "ComplexityBlock" $ do
