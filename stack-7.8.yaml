@@ -11,4 +11,5 @@ extra-deps:
 - pipes-files-0.1.1
 - hierarchy-0.3.1
 - posix-paths-0.2.1.0
+- free-4.12.1
 resolver: lts-2.22

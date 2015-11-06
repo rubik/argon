@@ -5,7 +5,6 @@
 module ArgonSpec (spec)
     where
 
-import Data.Foldable (toList)
 import Data.List (sort, isPrefixOf)
 import Data.Either (isLeft, lefts)
 import Data.Aeson (encode)
@@ -19,8 +18,8 @@ import System.IO.Unsafe (unsafePerformIO)
 import qualified SrcLoc     as GHC
 import qualified FastString as GHC
 import Pipes
-import Pipes.Safe (MonadSafe, runSafeT)
-import Pipes.Parse (evalStateT, drawAll)
+import Pipes.Safe (SafeT, runSafeT)
+import qualified Pipes.Prelude as P
 
 import Argon
 
@@ -50,11 +49,10 @@ shouldAnalyze :: String -> AnalysisResult -> Expectation
 shouldAnalyze f r = analyze defaultConfig p `shouldReturn` (p, r)
     where p = path f
 
-shouldReturnP :: (MonadIO m, MonadSafe m)
-              => IO (Producer FilePath m ()) -> [FilePath] -> Expectation
+shouldReturnP :: IO (Producer FilePath (SafeT IO) ()) -> [FilePath] -> Expectation
 shouldReturnP action res = do
     prod <- action
-    let paths = runSafeT $ evalStateT drawAll prod
+    paths <- runSafeT $ P.toListM prod
     paths `shouldBe` res
 
 spec :: Spec
@@ -152,7 +150,7 @@ spec = do
             it "disallows empty results" $
                 filterNulls ("", Right []) `shouldBe` False
             it "always allows non-empty results" $
-                property $ \x -> filterNulls ("", Right [x]) == True
+                property $ \x -> filterNulls ("", Right [x])
         describe "filterResults" $ do
             it "discards results with too low complexity" $
                 filterResults (Config 3 [] [] [] BareText )
@@ -169,13 +167,13 @@ spec = do
                                                        (p, Left err)
     describe "Argon.Walker" $
         describe "allFiles" $ do
-            it "traverses the filesystem with reversed DFS" $
+            it "traverses the filesystem depth-first" $
                 allFiles ("test" </> "tree") `shouldReturnP`
-                    [ "test" </> "tree" </> "a.hs"
-                    , "test" </> "tree" </> "sub2" </> "e.hs"
-                    , "test" </> "tree" </> "sub2" </> "a.hs"
+                    [ "test" </> "tree" </> "sub"  </> "b.hs"
                     , "test" </> "tree" </> "sub"  </> "c.hs"
-                    , "test" </> "tree" </> "sub"  </> "b.hs"
+                    , "test" </> "tree" </> "sub2" </> "a.hs"
+                    , "test" </> "tree" </> "sub2" </> "e.hs"
+                    , "test" </> "tree" </> "a.hs"
                     ]
             it "includes starting files in the result" $
                 allFiles ("test" </> "tree" </> "a.hs") `shouldReturnP`
