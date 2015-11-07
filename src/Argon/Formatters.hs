@@ -12,13 +12,13 @@ import Argon.Types
 import Argon.Loc
 
 
-bareTextFormatter :: Pipe (FilePath, AnalysisResult) String IO ()
+bareTextFormatter :: MonadIO m => Pipe (FilePath, AnalysisResult) String m ()
 bareTextFormatter = formatResult
     id
     ("\terror:" ++)
     (\(CC (l, func, cc)) -> printf "\t%s %s - %d" (locToString l) func cc)
 
-coloredTextFormatter :: Pipe (FilePath, AnalysisResult) String IO ()
+coloredTextFormatter :: MonadIO m => Pipe (FilePath, AnalysisResult) String m ()
 coloredTextFormatter = formatResult
     (\name -> open ++ name ++ reset)
     (printf "\t%serror%s: %s" (fore Red) reset)
@@ -46,10 +46,11 @@ coloredRank c = printf "%s%s (%d)%s" (fore color) rank c reset
             | c <= 10   = (Yellow, "B")
             | otherwise = (Red,    "C")
 
-formatResult :: (String -> String)            -- ^ The header formatter
+formatResult :: (MonadIO m)
+             => (String -> String)            -- ^ The header formatter
              -> (String -> String)            -- ^ The error formatter
              -> (ComplexityBlock -> String)   -- ^ The single line formatter
-             -> Pipe (FilePath, AnalysisResult) String IO ()
+             -> Pipe (FilePath, AnalysisResult) String m ()
 formatResult header errorF singleF = for cat $ \case
     (path, Left err) -> do
         yield $ header path

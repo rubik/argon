@@ -5,12 +5,9 @@
 module ArgonSpec (spec)
     where
 
-import Data.Foldable (toList)
 import Data.List (sort, isPrefixOf)
 import Data.Either (isLeft, lefts)
 import Data.Aeson (encode)
-import Text.Printf (printf)
-import qualified Data.Sequence as S
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative ((<$>), (<*>))
 #endif
@@ -20,6 +17,9 @@ import System.FilePath ((</>))
 import System.IO.Unsafe (unsafePerformIO)
 import qualified SrcLoc     as GHC
 import qualified FastString as GHC
+import Pipes
+import Pipes.Safe (SafeT, runSafeT)
+import qualified Pipes.Prelude as P
 
 import Argon
 
@@ -49,8 +49,13 @@ shouldAnalyze :: String -> AnalysisResult -> Expectation
 shouldAnalyze f r = analyze defaultConfig p `shouldReturn` (p, r)
     where p = path f
 
-shouldReturnS :: IO (S.Seq FilePath) -> [FilePath] -> Expectation
-shouldReturnS action res = action >>= ((`shouldBe` (sort res)) . sort . toList)
+shouldReturnSP :: Producer FilePath (SafeT IO) () -> [FilePath] -> Expectation
+shouldReturnSP prod res = do
+    paths <- runSafeT $ P.toListM prod
+    paths `shouldBe` res
+
+shouldReturnP :: (Eq a, Show a) => Producer a IO () -> [a] -> Expectation
+shouldReturnP prod res = P.toListM prod >>= (`shouldBe` res)
 
 spec :: Spec
 spec = do
@@ -147,7 +152,7 @@ spec = do
             it "disallows empty results" $
                 filterNulls ("", Right []) `shouldBe` False
             it "always allows non-empty results" $
-                property $ \x -> filterNulls ("", Right [x]) == True
+                property $ \x -> filterNulls ("", Right [x])
         describe "filterResults" $ do
             it "discards results with too low complexity" $
                 filterResults (Config 3 [] [] [] BareText )
@@ -164,23 +169,22 @@ spec = do
                                                        (p, Left err)
     describe "Argon.Walker" $
         describe "allFiles" $ do
-            it "traverses the filesystem with reversed DFS" $
-                allFiles ["test" </> "tree"] `shouldReturnS`
-                    [ "test" </> "tree" </> "a.hs"
-                    , "test" </> "tree" </> "sub2" </> "e.hs"
-                    , "test" </> "tree" </> "sub2" </> "a.hs"
+            it "traverses the filesystem depth-first" $
+                allFiles ("test" </> "tree") `shouldReturnSP`
+                    [ "test" </> "tree" </> "sub"  </> "b.hs"
                     , "test" </> "tree" </> "sub"  </> "c.hs"
-                    , "test" </> "tree" </> "sub"  </> "b.hs"
+                    , "test" </> "tree" </> "sub2" </> "a.hs"
+                    , "test" </> "tree" </> "sub2" </> "e.hs"
+                    , "test" </> "tree" </> "a.hs"
                     ]
             it "includes starting files in the result" $
-                allFiles [ "test" </> "tree" </> "a.hs"
-                         , "test" </> "tree" </> "a.txt"] `shouldReturnS`
+                allFiles ("test" </> "tree" </> "a.hs") `shouldReturnSP`
                     ["test" </> "tree" </> "a.hs"]
     describe "Argon.Types" $ do
         describe "ComplexityBlock" $ do
             it "implements Show correctly" $
                 show (CC ((2, 3), "bla bla", 32)) `shouldBe`
-                    printf "CC ((2,3),%s,32)" (show ("bla bla" :: String))
+                    "CC ((2,3),\"bla bla\",32)"
             it "implements Eq correctly" $
                 CC ((1, 4), "fun", 13) `shouldBe` CC ((1, 4), "fun", 13)
             it "implements Ord correctly" $

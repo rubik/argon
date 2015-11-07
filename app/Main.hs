@@ -3,7 +3,9 @@
 module Main where
 
 import Pipes
+import Pipes.Safe (runSafeT)
 import qualified Pipes.Prelude as P
+import Control.Monad (forM_)
 import System.Environment (getArgs)
 import System.Console.Docopt
 
@@ -37,10 +39,11 @@ readConfig args = do
 main :: IO ()
 main = do
     args <- parseArgsOrExit patterns =<< getArgs
-    ins  <- allFiles $ args `getAllArgs` argument "paths"
+    let ins = args `getAllArgs` argument "paths"
     conf <- readConfig args
-    let source = each ins
-              >-> P.mapM (analyze conf)
-              >-> P.map (filterResults conf)
-              >-> P.filter filterNulls
-    runEffect $ exportStream conf source
+    forM_ ins $ \path -> do
+        let source = allFiles path
+                  >-> P.mapM (liftIO . analyze conf)
+                  >-> P.map (filterResults conf)
+                  >-> P.filter filterNulls
+        runSafeT $ runEffect $ exportStream conf source
