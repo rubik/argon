@@ -42,8 +42,7 @@ main = do
     let ins = args `getAllArgs` argument "paths"
     conf <- readConfig args
     forM_ ins $ \path -> do
-        filesProducer <- allFiles path
-        let source = filesProducer
+        let source = allFiles path
                   >-> P.mapM (liftIO . analyze conf)
                   >-> P.map (filterResults conf)
                   >-> P.filter filterNulls

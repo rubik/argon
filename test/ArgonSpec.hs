@@ -49,11 +49,13 @@ shouldAnalyze :: String -> AnalysisResult -> Expectation
 shouldAnalyze f r = analyze defaultConfig p `shouldReturn` (p, r)
     where p = path f
 
-shouldReturnP :: IO (Producer FilePath (SafeT IO) ()) -> [FilePath] -> Expectation
-shouldReturnP action res = do
-    prod <- action
+shouldReturnSP :: Producer FilePath (SafeT IO) () -> [FilePath] -> Expectation
+shouldReturnSP prod res = do
     paths <- runSafeT $ P.toListM prod
     paths `shouldBe` res
+
+shouldReturnP :: (Eq a, Show a) => Producer a IO () -> [a] -> Expectation
+shouldReturnP prod res = P.toListM prod >>= (`shouldBe` res)
 
 spec :: Spec
 spec = do
@@ -168,7 +170,7 @@ spec = do
     describe "Argon.Walker" $
         describe "allFiles" $ do
             it "traverses the filesystem depth-first" $
-                allFiles ("test" </> "tree") `shouldReturnP`
+                allFiles ("test" </> "tree") `shouldReturnSP`
                     [ "test" </> "tree" </> "sub"  </> "b.hs"
                     , "test" </> "tree" </> "sub"  </> "c.hs"
                     , "test" </> "tree" </> "sub2" </> "a.hs"
@@ -176,7 +178,7 @@ spec = do
                     , "test" </> "tree" </> "a.hs"
                     ]
             it "includes starting files in the result" $
-                allFiles ("test" </> "tree" </> "a.hs") `shouldReturnP`
+                allFiles ("test" </> "tree" </> "a.hs") `shouldReturnSP`
                     ["test" </> "tree" </> "a.hs"]
     describe "Argon.Types" $ do
         describe "ComplexityBlock" $ do
