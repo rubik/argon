@@ -167,6 +167,7 @@ spec = do
                 property $ \m o p err -> filterResults (Config m [] [] [] o)
                                                        (p, Left err) ==
                                                        (p, Left err)
+#if 1
     describe "Argon.Walker" $
         describe "allFiles" $ do
             it "traverses the filesystem depth-first" $
@@ -180,6 +181,7 @@ spec = do
             it "includes starting files in the result" $
                 allFiles ("test" </> "tree" </> "a.hs") `shouldReturnSP`
                     ["test" </> "tree" </> "a.hs"]
+#endif
     describe "Argon.Types" $ do
         describe "ComplexityBlock" $ do
             it "implements Show correctly" $
