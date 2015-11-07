@@ -167,7 +167,7 @@ spec = do
                 property $ \m o p err -> filterResults (Config m [] [] [] o)
                                                        (p, Left err) ==
                                                        (p, Left err)
-#if 1
+#if 0
     describe "Argon.Walker" $
         describe "allFiles" $ do
             it "traverses the filesystem depth-first" $
