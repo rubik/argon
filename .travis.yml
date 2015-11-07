@@ -22,6 +22,9 @@ before_install:
   - travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v$STACK_VERSION/$STACK_FULLVERSION.tar.gz | tar -xz -C /tmp $STACK_FULLVERSION/stack
   - mv /tmp/$STACK_FULLVERSION/stack $HOME/.local/bin
   - chmod a+x $HOME/.local/bin/stack
+  - ls test
+  - ls test/tree
+  - ls test/tree/sub
 
 install:
   - stack setup --no-terminal

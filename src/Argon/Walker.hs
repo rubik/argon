@@ -16,4 +16,4 @@ allFiles :: (MonadIO m, MonadSafe m) => FilePath -> Producer FilePath m ()
 allFiles path = do
     isFile <- liftIO $ doesFileExist path
     if isFile then each [path] >-> P.filter (".hs" `isSuffixOf`)
-              else find path (glob "*.hs")
+              else find path (glob "*.hs" <> regular)
