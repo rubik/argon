@@ -8,6 +8,7 @@ module ArgonSpec (spec)
 import Data.List (sort, isPrefixOf)
 import Data.Either (isLeft, lefts)
 import Data.Aeson (encode)
+import Text.Printf (printf)
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative ((<$>), (<*>))
 #endif
@@ -15,6 +16,7 @@ import Test.Hspec
 import Test.QuickCheck
 import System.FilePath ((</>))
 import System.IO.Unsafe (unsafePerformIO)
+import System.Console.ANSI
 import qualified SrcLoc     as GHC
 import qualified FastString as GHC
 import Pipes
@@ -49,13 +51,34 @@ shouldAnalyze :: String -> AnalysisResult -> Expectation
 shouldAnalyze f r = analyze defaultConfig p `shouldReturn` (p, r)
     where p = path f
 
-shouldReturnSP :: Producer FilePath (SafeT IO) () -> [FilePath] -> Expectation
-shouldReturnSP prod res = do
+shouldProduceS :: Producer FilePath (SafeT IO) () -> [FilePath] -> Expectation
+shouldProduceS prod res = do
     paths <- runSafeT $ P.toListM prod
     paths `shouldBe` res
 
-shouldReturnP :: (Eq a, Show a) => Producer a IO () -> [a] -> Expectation
-shouldReturnP prod res = P.toListM prod >>= (`shouldBe` res)
+shouldProduce :: (Eq a, Show a) => Producer a IO () -> [a] -> Expectation
+shouldProduce prod res = P.toListM prod >>= (`shouldBe` res)
+
+produceError, produceResult :: Producer (FilePath, AnalysisResult) IO ()
+produceError  = each [("path/f.hs", Left "err!")]
+produceResult = each [("f.hs", Right [ CC (ones, "g", 3)
+                                     , CC (lo 2, "h", 5)
+                                     , CC (lo 5, "f", 6)
+                                     , CC (lo 7, "m", 10)
+                                     , CC ((9, 2), "n", 15)
+                                     ])]
+
+-- | ANSI bold color
+bold :: String
+bold = setSGRCode [SetConsoleIntensity BoldIntensity]
+
+-- | Make a ANSI foreground color sequence
+fore :: Color -> String
+fore color = setSGRCode [SetColor Foreground Dull color]
+
+-- | ANSI sequence for reset
+reset :: String
+reset = setSGRCode []
 
 spec :: Spec
 spec = do
@@ -167,11 +190,45 @@ spec = do
                 property $ \m o p err -> filterResults (Config m [] [] [] o)
                                                        (p, Left err) ==
                                                        (p, Left err)
+    describe "Argon.Formatters" $ do
+        describe "bareTextFormatter" $ do
+            it "correctly formats errors" $
+                (produceError >-> bareTextFormatter) `shouldProduce`
+                    ["path/f.hs", "\terror: err!"]
+            it "correctly formats results" $
+                (produceResult >-> bareTextFormatter) `shouldProduce`
+                    [ "f.hs"
+                    , "\t1:1 g - 3"
+                    , "\t2:1 h - 5"
+                    , "\t5:1 f - 6"
+                    , "\t7:1 m - 10"
+                    , "\t9:2 n - 15"
+                    ]
+        describe "coloredTextFormatter" $ do
+            it "correctly formats errors" $
+                (produceError >-> coloredTextFormatter) `shouldProduce`
+                    [ bold ++ "path/f.hs" ++ reset
+                    , "\t" ++ fore Red ++ "error" ++ reset ++ ": err!"
+                    ]
+            it "correctly formats results" $
+                (produceResult >-> coloredTextFormatter) `shouldProduce`
+                    [ bold ++ "f.hs" ++ reset
+                    , printf "\t1:1 %sg%s - %sA (3)%s" (fore Cyan) reset
+                                                       (fore Green) reset
+                    , printf "\t2:1 %sh%s - %sA (5)%s" (fore Cyan) reset
+                                                       (fore Green) reset
+                    , printf "\t5:1 %sf%s - %sB (6)%s" (fore Cyan) reset
+                                                       (fore Yellow) reset
+                    , printf "\t7:1 %sm%s - %sB (10)%s" (fore Cyan) reset
+                                                        (fore Yellow) reset
+                    , printf "\t9:2 %sn%s - %sC (15)%s" (fore Magenta) reset
+                                                        (fore Red) reset
+                    ]
 #if 0
     describe "Argon.Walker" $
         describe "allFiles" $ do
             it "traverses the filesystem depth-first" $
-                allFiles ("test" </> "tree") `shouldReturnSP`
+                allFiles ("test" </> "tree") `shouldProduceS`
                     [ "test" </> "tree" </> "sub"  </> "b.hs"
                     , "test" </> "tree" </> "sub"  </> "c.hs"
                     , "test" </> "tree" </> "sub2" </> "a.hs"
@@ -179,7 +236,7 @@ spec = do
                     , "test" </> "tree" </> "a.hs"
                     ]
             it "includes starting files in the result" $
-                allFiles ("test" </> "tree" </> "a.hs") `shouldReturnSP`
+                allFiles ("test" </> "tree" </> "a.hs") `shouldProduceS`
                     ["test" </> "tree" </> "a.hs"]
 #endif
     describe "Argon.Types" $ do

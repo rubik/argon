@@ -15,23 +15,26 @@ import Argon.Loc
 bareTextFormatter :: MonadIO m => Pipe (FilePath, AnalysisResult) String m ()
 bareTextFormatter = formatResult
     id
-    ("\terror:" ++)
+    ("\terror: " ++)
     (\(CC (l, func, cc)) -> printf "\t%s %s - %d" (locToString l) func cc)
 
 coloredTextFormatter :: MonadIO m => Pipe (FilePath, AnalysisResult) String m ()
 coloredTextFormatter = formatResult
-    (\name -> open ++ name ++ reset)
+    (\name -> bold ++ name ++ reset)
     (printf "\t%serror%s: %s" (fore Red) reset)
-    (\(CC (l, func, cc)) -> printf "\t%s %s - %s%s" (locToString l)
-                                                    (coloredFunc func l)
-                                                    (coloredRank cc) reset)
+    (\(CC (l, func, cc)) -> printf "\t%s %s - %s" (locToString l)
+                                                  (coloredFunc func l)
+                                                  (coloredRank cc))
 
-open :: String
-open = setSGRCode [SetConsoleIntensity BoldIntensity]
+-- | ANSI bold color
+bold :: String
+bold = setSGRCode [SetConsoleIntensity BoldIntensity]
 
+-- | Make a ANSI foreground color sequence
 fore :: Color -> String
 fore color = setSGRCode [SetColor Foreground Dull color]
 
+-- | ANSI sequence for reset
 reset :: String
 reset = setSGRCode []
 

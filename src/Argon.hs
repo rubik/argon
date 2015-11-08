@@ -29,6 +29,9 @@ module Argon
     , filterResults
     , filterNulls
     , exportStream
+    -- * Formatting results
+    , bareTextFormatter
+    , coloredTextFormatter
     -- * Utilities
     , srcSpanToLoc
     , locToString
@@ -41,3 +44,4 @@ import Argon.Cabal (flagsMap, parseExts)
 import Argon.Types
 import Argon.Loc
 import Argon.Walker (allFiles)
+import Argon.Formatters (bareTextFormatter, coloredTextFormatter)
