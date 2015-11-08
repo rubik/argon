@@ -153,7 +153,7 @@ spec = do
                 unsafePerformIO (analyze defaultConfig (path "missingincluded.hs"))
                     `shouldSatisfy`
                     errStartsWith ("2:0  fatal error: necessaryInclude.h: "
-                                  ++ "No such file or directory\n\t")
+                                  ++ "No such file or directory")
             it "catches CPP parsing errors" $
                 unsafePerformIO (analyze defaultConfig (path "cpp-error.hs"))
                     `shouldSatisfy`
