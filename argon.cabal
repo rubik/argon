@@ -10,7 +10,7 @@ maintainer:          michelelacchia@gmail.com
 copyright:           2015 Michele Lacchia
 category:            Development, Static Analysis
 build-type:          Simple
-cabal-version:       >=1.10
+cabal-version:       >=1.18
 description:
     Argon performs static analysis on your code in order to compute cyclomatic
     complexity. It is a quantitative measure of the number of linearly
@@ -26,6 +26,9 @@ extra-source-files:
     CHANGELOG.md
     USAGE.txt
     test/data/*.hs
+    test/data/*.h
+    test/data/*.cabal
+    test/data/include/*.h
     test/tree/*.hs
     test/tree/*.txt
     test/tree/sub/*.hs

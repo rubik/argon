@@ -17,7 +17,6 @@ import Control.Applicative ((<$>))
 import qualified GHC
 import qualified DynFlags       as GHC
 import qualified MonadUtils     as GHC
-import qualified StringBuffer   as GHC
 import qualified DriverPhases   as GHC
 import qualified DriverPipeline as GHC
 
@@ -35,22 +34,14 @@ getPreprocessedSrcDirect :: (GHC.GhcMonad m)
                          => CppOptions
                          -> FilePath
                          -> m (String, GHC.DynFlags)
-getPreprocessedSrcDirect cppOptions src =
-    (\(s, _, d) -> (s, d)) <$> getPreprocessedSrcDirectPrim cppOptions src
-
-getPreprocessedSrcDirectPrim :: (GHC.GhcMonad m)
-                              => CppOptions
-                              -> FilePath
-                              -> m (String, GHC.StringBuffer, GHC.DynFlags)
-getPreprocessedSrcDirectPrim cppOptions file = do
+getPreprocessedSrcDirect cppOptions file = do
   hscEnv <- GHC.getSession
   let dfs = GHC.extractDynFlags hscEnv
       newEnv = GHC.replaceDynFlags hscEnv (injectCppOptions cppOptions dfs)
   (dflags', hspp_fn) <-
       GHC.liftIO $ GHC.preprocess newEnv (file, Just (GHC.Cpp GHC.HsSrcFile))
-  buf <- GHC.liftIO $ GHC.hGetStringBuffer hspp_fn
   txt <- GHC.liftIO $ readFile hspp_fn
-  return (txt, buf, dflags')
+  return (txt, dflags')
 
 injectCppOptions :: CppOptions -> GHC.DynFlags -> GHC.DynFlags
 injectCppOptions CppOptions{..} dflags =

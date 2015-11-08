@@ -6,7 +6,6 @@ module ArgonSpec (spec)
     where
 
 import Data.List (sort, isPrefixOf)
-import Data.Either (isLeft, lefts)
 import Data.Aeson (encode)
 import Text.Printf (printf)
 #if __GLASGOW_HASKELL__ < 710
@@ -20,7 +19,7 @@ import System.Console.ANSI
 import qualified SrcLoc     as GHC
 import qualified FastString as GHC
 import Pipes
-import Pipes.Safe (SafeT, runSafeT)
+--import Pipes.Safe (SafeT, runSafeT)
 import qualified Pipes.Prelude as P
 
 import Argon
@@ -44,17 +43,25 @@ realSpan :: Int -> Int -> GHC.SrcSpan
 realSpan a b = GHC.mkSrcSpan (mkLoc a b) $ mkLoc (-a) (b + 24)
     where mkLoc = GHC.mkSrcLoc (GHC.mkFastString "real loc")
 
+errStartsWith :: String -> (FilePath, AnalysisResult) -> Bool
+errStartsWith _ (_, Right _)  = False
+errStartsWith p (_, Left msg) = p `isPrefixOf` msg
+
 path :: String -> FilePath
 path f = "test" </> "data" </> f
 
 shouldAnalyze :: String -> AnalysisResult -> Expectation
-shouldAnalyze f r = analyze defaultConfig p `shouldReturn` (p, r)
+shouldAnalyze f = shouldAnalyzeC (f, defaultConfig)
+
+shouldAnalyzeC :: (String, Config) -> AnalysisResult -> Expectation
+shouldAnalyzeC (f, config) r = analyze config p `shouldReturn` (p, r)
     where p = path f
 
-shouldProduceS :: Producer FilePath (SafeT IO) () -> [FilePath] -> Expectation
-shouldProduceS prod res = do
-    paths <- runSafeT $ P.toListM prod
-    paths `shouldBe` res
+-- Disabled until I figure out why Argon.Walker tests fail only on Travis
+{-shouldProduceS :: Producer FilePath (SafeT IO) () -> [FilePath] -> Expectation-}
+{-shouldProduceS prod res = do-}
+    {-paths <- runSafeT $ P.toListM prod-}
+    {-paths `shouldBe` res-}
 
 shouldProduce :: (Eq a, Show a) => Producer a IO () -> [a] -> Expectation
 shouldProduce prod res = P.toListM prod >>= (`shouldBe` res)
@@ -134,12 +141,38 @@ spec = do
                 "syntaxerror.hs" `shouldAnalyze`
                     Left ("2:1 parse error (possibly incorrect indentation" ++
                           " or mismatched brackets)")
+            it "catches syntax errors (missing CPP)" $
+                "missingcpp.hs" `shouldAnalyze`
+                    Left "1:2 lexical error at character 'i'"
+            it "catches syntax errors (missing cabal macros)" $
+                unsafePerformIO (analyze defaultConfig (path "missingmacros.hs"))
+                    `shouldSatisfy`
+                    errStartsWith ("2:0  error: missing binary operator " ++
+                                   "before token ")
+            it "catches syntax errors (missing include dir)" $
+                unsafePerformIO (analyze defaultConfig (path "missingincluded.hs"))
+                    `shouldSatisfy`
+                    errStartsWith ("2:0  fatal error: necessaryInclude.h: "
+                                  ++ "No such file or directory\n\t")
             it "catches CPP parsing errors" $
                 unsafePerformIO (analyze defaultConfig (path "cpp-error.hs"))
-                `shouldSatisfy`
-                \(_, res) ->
-                    isLeft res && ("2:0  error: unterminated #else"
-                                   `isPrefixOf` head (lefts [res]))
+                    `shouldSatisfy`
+                    errStartsWith "2:0  error: unterminated #else"
+        describe "config" $ do
+            it "reads default extensions from Cabal file" $
+                ("missingcpp.hs", unsafePerformIO
+                    (do loadedExts <- parseExts $ path "test.cabal"
+                        return $ defaultConfig { exts = loadedExts }))
+                    `shouldAnalyzeC`
+                    Right [CC (lo 4, "f", 1)]
+            it "includes Cabal macros for preprocessing" $
+                ( "missingmacros.hs"
+                , defaultConfig { headers = [path "cabal_macros.h"] }
+                ) `shouldAnalyzeC` Right [CC (lo 3, "f", 2)]
+            it "includes directory from include-dir for preprocessing" $
+                ( "missingincluded.hs"
+                , defaultConfig { includeDirs = [path "include"] }
+                ) `shouldAnalyzeC` Right [CC (lo 5, "f", 3)]
     describe "Argon.Loc" $ do
         describe "srcSpanToLoc" $ do
             it "can convert a real src span to loc" $
@@ -224,21 +257,6 @@ spec = do
                     , printf "\t9:2 %sn%s - %sC (15)%s" (fore Magenta) reset
                                                         (fore Red) reset
                     ]
-#if 0
-    describe "Argon.Walker" $
-        describe "allFiles" $ do
-            it "traverses the filesystem depth-first" $
-                allFiles ("test" </> "tree") `shouldProduceS`
-                    [ "test" </> "tree" </> "sub"  </> "b.hs"
-                    , "test" </> "tree" </> "sub"  </> "c.hs"
-                    , "test" </> "tree" </> "sub2" </> "a.hs"
-                    , "test" </> "tree" </> "sub2" </> "e.hs"
-                    , "test" </> "tree" </> "a.hs"
-                    ]
-            it "includes starting files in the result" $
-                allFiles ("test" </> "tree" </> "a.hs") `shouldProduceS`
-                    ["test" </> "tree" </> "a.hs"]
-#endif
     describe "Argon.Types" $ do
         describe "ComplexityBlock" $ do
             it "implements Show correctly" $
@@ -266,3 +284,18 @@ spec = do
                 encode ("f.hs" :: String, Left "err" :: AnalysisResult)
                     `shouldBe`
                     "{\"path\":\"f.hs\",\"type\":\"error\",\"message\":\"err\"}"
+#if 0
+    describe "Argon.Walker" $
+        describe "allFiles" $ do
+            it "traverses the filesystem depth-first" $
+                allFiles ("test" </> "tree") `shouldProduceS`
+                    [ "test" </> "tree" </> "sub"  </> "b.hs"
+                    , "test" </> "tree" </> "sub"  </> "c.hs"
+                    , "test" </> "tree" </> "sub2" </> "a.hs"
+                    , "test" </> "tree" </> "sub2" </> "e.hs"
+                    , "test" </> "tree" </> "a.hs"
+                    ]
+            it "includes starting files in the result" $
+                allFiles ("test" </> "tree" </> "a.hs") `shouldProduceS`
+                    ["test" </> "tree" </> "a.hs"]
+#endif
