@@ -1,0 +1,7 @@
+flags: {}
+extra-package-dbs: []
+packages:
+- '.'
+extra-deps:
+- stack-hpc-coveralls-0.0.0.2
+resolver: lts-3.11
