@@ -9,6 +9,10 @@
         <img alt="Tests"
              src="https://img.shields.io/travis/rubik/argon.svg?style=flat-square">
     </a>
+    <a href="https://coveralls.io/github/rubik/argon">
+        <img alt="Code coverage"
+             src="https://img.shields.io/coveralls/rubik/argon.svg?style=flat-square">
+    </a>
     <a href="https://github.com/rubik/argon/blob/master/LICENSE">
         <img alt="License"
              src="https://img.shields.io/badge/license-ISC-blue.svg?style=flat-square">
