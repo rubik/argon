@@ -32,6 +32,5 @@ script:
   - stack test :argon-test --no-terminal --coverage
 
 after_script:
-  - cd $HOME
-  - STACK_YAML=$TRAVIS_BUILD_DIR stack-travis-coveralls.yaml stack install stack-hpc-coveralls --no-terminal
-  - cd $TRAVIS_BUILD_DIR && stack-hpc-coveralls argon argon-test
+  - travis_retry curl -L https://github.com/rubik/stack-hpc-coveralls/releases/download/v0.0.0.3/SHC-linux-x64-$GHCVER.tar.bz2 | tar -xj
+  - ./stack-hpc-coveralls argon argon-test
