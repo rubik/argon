@@ -3,6 +3,6 @@ extra-package-dbs: []
 packages:
 - '.'
 extra-deps:
-- stack-hpc-coveralls-0.0.0.2
+- stack-hpc-coveralls-0.0.0.3
 - docopt-0.7.0.4
 resolver: lts-3.11
