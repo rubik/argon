@@ -23,6 +23,7 @@ before_install:
   #- mv /tmp/$STACK_FULLVERSION/stack $HOME/.local/bin
   - travis_retry curl -L https://github.com/rubik/argon/releases/download/test-stack-1.7/stack-linux-x64.tar.bz2 | tar -xj -C $HOME/.local/bin
   - chmod a+x $HOME/.local/bin/stack
+  - stack --version
 
 install:
   - stack setup --no-terminal
@@ -31,5 +32,5 @@ script:
   - stack test :argon-test --no-terminal --coverage
 
 after_script:
-  - STACK_YAML=stack-travis-coveralls.yaml install stack-hpc-coveralls
+  - STACK_YAML=stack-travis-coveralls.yaml stack install stack-hpc-coveralls
   - stack-hpc-coveralls argon argon-test
