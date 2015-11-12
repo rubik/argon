@@ -25,7 +25,10 @@ before_install:
 
 install:
   - stack setup --no-terminal
-  - stack build --no-terminal
 
 script:
-  - stack test :argon-test --no-terminal
+  - stack test :argon-test --no-terminal --coverage
+
+after_script:
+  - cabal install stack-hpc-coveralls
+  - stack-hpc-coveralls argon argon-test
