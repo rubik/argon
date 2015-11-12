@@ -14,8 +14,16 @@ cache:
   directories:
     - $HOME/.stack/
     - $HOME/stack/
+    - $HOME/.local/bin
 
 before_install:
+  - mkdir -p $HOME/.local/bin
+  - export PATH=$HOME/.local/bin:$PATH
+  - export STACK_VERSION=0.1.6.0
+  - export STACK_FULLVERSION=stack-$STACK_VERSION-linux-x86_64
+  - travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v$STACK_VERSION/$STACK_FULLVERSION.tar.gz | tar -xz -C /tmp $STACK_FULLVERSION/stack
+  - mv /tmp/$STACK_FULLVERSION/stack $HOME/.local/bin
+  - chmod a+x $HOME/.local/bin/stack
   - ./travis-install-stack.sh
   - cd $HOME/rubik/argon
 
