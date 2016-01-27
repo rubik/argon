@@ -19,6 +19,7 @@ import qualified DynFlags       as GHC
 import qualified MonadUtils     as GHC
 import qualified DriverPhases   as GHC
 import qualified DriverPipeline as GHC
+import qualified HscTypes       as GHC
 
 data CppOptions = CppOptions
                 { cppDefine :: [String]    -- ^ CPP #define macros
@@ -36,8 +37,8 @@ getPreprocessedSrcDirect :: (GHC.GhcMonad m)
                          -> m (String, GHC.DynFlags)
 getPreprocessedSrcDirect cppOptions file = do
   hscEnv <- GHC.getSession
-  let dfs = GHC.extractDynFlags hscEnv
-      newEnv = GHC.replaceDynFlags hscEnv (injectCppOptions cppOptions dfs)
+  let dfs = GHC.hsc_dflags hscEnv
+      newEnv = hscEnv { GHC.hsc_dflags = injectCppOptions cppOptions dfs }
   (dflags', hspp_fn) <-
       GHC.liftIO $ GHC.preprocess newEnv (file, Just (GHC.Cpp GHC.HsSrcFile))
   txt <- GHC.liftIO $ readFile hspp_fn
