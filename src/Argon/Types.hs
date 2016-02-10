@@ -79,7 +79,7 @@ instance ToJSON ComplexityBlock where
                , "complexity" .= cc
                ]
 
-instance ToJSON (FilePath, AnalysisResult) where
+instance {-# OVERLAPPING #-} ToJSON (FilePath, AnalysisResult) where
     toJSON (p, Left err) = object [ "path"    .= p
                                   , "type"    .= ("error" :: String)
                                   , "message" .= err

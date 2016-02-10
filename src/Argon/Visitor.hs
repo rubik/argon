@@ -26,7 +26,7 @@ funCC f = CC (getLocation $ GHC.fun_id f, getFuncName f, complexity f)
 
 getBinds :: (Data from, Typeable from) => from -> [Function]
 getBinds = everythingStaged Parser (++) [] $ mkQ [] visit
-    where visit fun@(GHC.FunBind {}) = [fun]
+    where visit fun@GHC.FunBind {} = [fun]
           visit _ = []
 
 getLocation :: GHC.Located a -> Loc
@@ -51,7 +51,7 @@ sumWith :: (a -> Int) -> [a] -> Int
 sumWith f = sum . map f
 
 visitExp :: Exp -> Int
-visitExp (GHC.HsIf {}) = 1
+visitExp GHC.HsIf {} = 1
 visitExp (GHC.HsMultiIf _ alts) = length alts - 1
 visitExp (GHC.HsLamCase _ alts) = length (GHC.mg_alts alts) - 1
 visitExp (GHC.HsCase _ alts)    = length (GHC.mg_alts alts) - 1
