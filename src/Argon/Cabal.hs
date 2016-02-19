@@ -31,11 +31,13 @@ parseExts path = extract <$> Dist.readPackageDescription Dist.silent path
             (Dist.libBuildInfo . Dist.condTreeData) <$> Dist.condLibrary pkg
 
 extFromBI :: Dist.BuildInfo -> [GHC.ExtensionFlag]
-extFromBI = mapMaybe (get . toString) . Dist.defaultExtensions
-    where get = flip M.lookup flagsMap
-          toString (Dist.UnknownExtension ext) = ext
-          toString (Dist.EnableExtension  ext) = show ext
-          toString (Dist.DisableExtension ext) = show ext
+extFromBI buildInfo = concat [extensionList Dist.defaultExtensions, extensionList Dist.otherExtensions, extensionList Dist.oldExtensions]
+    where
+        extensionList extType = mapMaybe (get . toString) (extType buildInfo)
+        get = flip M.lookup flagsMap
+        toString (Dist.UnknownExtension ext) = ext
+        toString (Dist.EnableExtension  ext) = show ext
+        toString (Dist.DisableExtension ext) = show ext
 
 #if __GLASGOW_HASKELL__ < 710
 specToPair :: (String, GHC.ExtensionFlag, a) -> (String, GHC.ExtensionFlag)
