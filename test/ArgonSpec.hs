@@ -165,6 +165,18 @@ spec = do
                         return $ defaultConfig { exts = loadedExts }))
                     `shouldAnalyzeC`
                     Right [CC (lo 4, "f", 1)]
+            it "reads other extensions from Cabal file" $
+                ("missingcpp.hs", unsafePerformIO
+                    (do loadedExts <- parseExts $ path "test-other.cabal"
+                        return $ defaultConfig { exts = loadedExts }))
+                    `shouldAnalyzeC`
+                    Right [CC (lo 4, "f", 1)]
+            it "reads old extensions from Cabal file" $
+                ("missingcpp.hs", unsafePerformIO
+                    (do loadedExts <- parseExts $ path "test-old.cabal"
+                        return $ defaultConfig { exts = loadedExts }))
+                    `shouldAnalyzeC`
+                    Right [CC (lo 4, "f", 1)]
             it "includes Cabal macros for preprocessing" $
                 ( "missingmacros.hs"
                 , defaultConfig { headers = [path "cabal_macros.h"] }
