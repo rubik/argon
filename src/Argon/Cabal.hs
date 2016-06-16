@@ -37,7 +37,7 @@ extFromBI binfo = mapMaybe (get . toString) . nub $ allExts
           toString (Dist.UnknownExtension ext) = ext
           toString (Dist.EnableExtension  ext) = show ext
           toString (Dist.DisableExtension ext) = show ext
-          allExts = concatMap ($ binfo) $
+          allExts = concatMap ($ binfo)
               [Dist.defaultExtensions, Dist.otherExtensions, Dist.oldExtensions]
 
 #if __GLASGOW_HASKELL__ < 710
