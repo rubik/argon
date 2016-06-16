@@ -2,6 +2,7 @@
 module Argon.Cabal (flagsMap, parseExts)
     where
 
+import Data.List (nub)
 import Data.Maybe (mapMaybe)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as M
@@ -31,11 +32,13 @@ parseExts path = extract <$> Dist.readPackageDescription Dist.silent path
             (Dist.libBuildInfo . Dist.condTreeData) <$> Dist.condLibrary pkg
 
 extFromBI :: Dist.BuildInfo -> [GHC.ExtensionFlag]
-extFromBI = mapMaybe (get . toString) . Dist.defaultExtensions
+extFromBI binfo = mapMaybe (get . toString) . nub $ allExts
     where get = flip M.lookup flagsMap
           toString (Dist.UnknownExtension ext) = ext
           toString (Dist.EnableExtension  ext) = show ext
           toString (Dist.DisableExtension ext) = show ext
+          allExts = concatMap ($ binfo) $
+              [Dist.defaultExtensions, Dist.otherExtensions, Dist.oldExtensions]
 
 #if __GLASGOW_HASKELL__ < 710
 specToPair :: (String, GHC.ExtensionFlag, a) -> (String, GHC.ExtensionFlag)
