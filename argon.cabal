@@ -50,7 +50,7 @@ library
                        Argon.Walker
   build-depends:       base             >=4.7    && <5
                      , ansi-terminal    >=0.6
-                     , aeson            >=0.8
+                     , aeson            >=0.11
                      , bytestring       >=0.10
                      , pipes            >=4.1
                      , pipes-group      >=1.0
@@ -92,7 +92,7 @@ test-suite argon-test
                      , argon            -any
                      , ansi-terminal    >=0.6
                      , ghc              >=7.8    && <8
-                     , aeson            >=0.8
+                     , aeson            >=0.11
                      , hspec            >=2.1
                      , QuickCheck       -any
                      , filepath         >=1.3
