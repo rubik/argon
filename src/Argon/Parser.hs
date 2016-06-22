@@ -86,12 +86,13 @@ runParser parser flags filename str = GHC.unP parser parseState
 initDynFlags :: GHC.GhcMonad m => Config -> FilePath -> m GHC.DynFlags
 initDynFlags conf file = do
     dflags0 <- GHC.getSessionDynFlags
-    src_opts <- GHC.liftIO $ GHC.getOptionsFromFile dflags0 file
-    (dflags1, _, _) <- GHC.parseDynamicFilePragma dflags0 src_opts
-    let cabalized = foldl' GHC.xopt_set dflags1 $ exts conf
-    let dflags2 = cabalized { GHC.log_action = customLogAction }
-    void $ GHC.setSessionDynFlags dflags2
-    return dflags2
+    (dflags1,_,_) <- GHC.parseDynamicFlagsCmdLine dflags0
+        [GHC.L GHC.noSrcSpan ("-X" ++ e) | e <- exts conf]
+    src_opts <- GHC.liftIO $ GHC.getOptionsFromFile dflags1 file
+    (dflags2, _, _) <- GHC.parseDynamicFilePragma dflags1 src_opts
+    let dflags3 = dflags2 { GHC.log_action = customLogAction }
+    void $ GHC.setSessionDynFlags dflags3
+    return dflags3
 
 customLogAction :: GHC.LogAction
 customLogAction dflags severity srcSpan _ m =

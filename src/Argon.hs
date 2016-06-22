@@ -23,7 +23,6 @@ module Argon
     , analyze
     , parseModule
     , parseExts
-    , flagsMap
     -- * Manipulating results
     , order
     , filterResults
@@ -40,7 +39,7 @@ module Argon
 
 import Argon.Parser (LModule, analyze, parseModule)
 import Argon.Results (order, filterResults, filterNulls, exportStream)
-import Argon.Cabal (flagsMap, parseExts)
+import Argon.Cabal (parseExts)
 import Argon.Types
 import Argon.Loc
 import Argon.Walker (allFiles)
