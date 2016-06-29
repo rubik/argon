@@ -4,7 +4,7 @@ Usage:
 Options:
     -h --help                   show this help
     -m --min=<n>                the minimum complexity to show in results
-    --cabal-file=<path>         path to Cabal main file
+    --cabal-file=<path>         explicitly set the path to main Cabal file
     --cabal-macros=<path>       Cabal header file with versions macros
     -I --include-dir=<path>     additional directory with header files
     --no-color                  results are not colored

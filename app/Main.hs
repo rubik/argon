@@ -23,7 +23,8 @@ getOpt args def opt = getArgWithDefault args def $ longOption opt
 
 readConfig :: Arguments -> IO Config
 readConfig args = do
-    xFlags <- maybe (return []) parseExts $ getArg args $ longOption "cabal-file"
+    cabalFile <- maybe autoCabal (return . Just) $ getArg args (longOption "cabal-file")
+    xFlags <- maybe (return []) parseExts cabalFile
     return Config {
       minCC       = read $ getOpt args "1" "min"
     , exts        = xFlags

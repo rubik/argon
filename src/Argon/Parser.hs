@@ -2,7 +2,6 @@
 module Argon.Parser (LModule, analyze, parseModule)
     where
 
-import Data.List (foldl')
 import Control.Monad (void)
 import qualified Control.Exception as E
 

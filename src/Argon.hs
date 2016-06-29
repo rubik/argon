@@ -22,7 +22,9 @@ module Argon
     -- * Parsing
     , analyze
     , parseModule
+    -- * Cabal file utilities
     , parseExts
+    , autoCabal
     -- * Manipulating results
     , order
     , filterResults
@@ -39,7 +41,7 @@ module Argon
 
 import Argon.Parser (LModule, analyze, parseModule)
 import Argon.Results (order, filterResults, filterNulls, exportStream)
-import Argon.Cabal (parseExts)
+import Argon.Cabal (parseExts, autoCabal)
 import Argon.Types
 import Argon.Loc
 import Argon.Walker (allFiles)
