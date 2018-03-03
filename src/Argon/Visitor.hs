@@ -4,7 +4,7 @@ module Argon.Visitor (funcsCC)
 import Data.Generics (Data, Typeable, mkQ)
 import Argon.SYB.Utils (Stage(..), everythingStaged)
 import Control.Arrow ((&&&))
-
+    
 import qualified GHC
 import qualified RdrName as GHC
 import qualified OccName as GHC
@@ -42,7 +42,7 @@ complexity f = let matches = getMatches f
                 in length matches + sumWith query matches
 
 getMatches :: Function -> [GHC.LMatch GHC.RdrName MatchBody]
-getMatches = GHC.mg_alts . GHC.fun_matches
+getMatches = GHC.unLoc . GHC.mg_alts . GHC.fun_matches
 
 getName :: GHC.RdrName -> String
 getName = GHC.occNameString . GHC.rdrNameOcc
@@ -53,13 +53,14 @@ sumWith f = sum . map f
 visitExp :: Exp -> Int
 visitExp GHC.HsIf {} = 1
 visitExp (GHC.HsMultiIf _ alts) = length alts - 1
-visitExp (GHC.HsLamCase _ alts) = length (GHC.mg_alts alts) - 1
+visitExp (GHC.HsLamCase alts) = length (GHC.mg_alts alts) - 1
+-- HsLamCase (MatchGroup id (LHsExpr id))
 visitExp (GHC.HsCase _ alts)    = length (GHC.mg_alts alts) - 1
 visitExp _ = 0
 
 visitOp :: Exp -> Int
 visitOp (GHC.OpApp _ (GHC.L _ (GHC.HsVar op)) _ _) =
-    case getName op of
+    case getName (GHC.unLoc op) of
       "||" -> 1
       "&&" -> 1
       _    -> 0

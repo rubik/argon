@@ -2,10 +2,8 @@ module Argon.Walker (allFiles)
     where
 
 import Pipes
-import Pipes.Files
 import Pipes.Safe
 import qualified Pipes.Prelude as P
-import Data.Monoid ((<>))
 import Data.List (isSuffixOf)
 import System.Directory (doesFileExist)
 
@@ -16,4 +14,6 @@ allFiles :: (MonadIO m, MonadSafe m) => FilePath -> Producer FilePath m ()
 allFiles path = do
     isFile <- liftIO $ doesFileExist path
     if isFile then each [path] >-> P.filter (".hs" `isSuffixOf`)
-              else find path (glob "*.hs" <> regular)
+              else undefined -- find path (glob "*.hs" <> regular)
+                             -- TODO: reimplement this, or the whole "allFiles" function.
+

@@ -2,7 +2,6 @@
 module Argon.Parser (LModule, analyze, parseModule)
     where
 
-import Data.List (foldl')
 import Control.Monad (void)
 import qualified Control.Exception as E
 
@@ -11,6 +10,7 @@ import qualified SrcLoc       as GHC
 import qualified Lexer        as GHC
 import qualified Parser       as GHC
 import qualified DynFlags     as GHC
+import qualified GHC.LanguageExtensions as GHC
 import qualified HeaderInfo   as GHC
 import qualified MonadUtils   as GHC
 import qualified Outputable   as GHC
@@ -61,7 +61,7 @@ parseModuleWithCpp :: Config
 parseModuleWithCpp conf cppOptions file =
     GHC.runGhc (Just libdir) $ do
       dflags <- initDynFlags conf file
-      let useCpp = GHC.xopt GHC.Opt_Cpp dflags
+      let useCpp = GHC.xopt GHC.Cpp dflags
       (fileContents, dflags1) <-
         if useCpp
            then getPreprocessedSrcDirect cppOptions file
@@ -95,7 +95,7 @@ initDynFlags conf file = do
     return dflags3
 
 customLogAction :: GHC.LogAction
-customLogAction dflags severity srcSpan _ m =
+customLogAction dflags _ severity srcSpan _ m =
     case severity of
       GHC.SevFatal -> throwError
       GHC.SevError -> throwError
