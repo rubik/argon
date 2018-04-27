@@ -50,13 +50,10 @@ getName = GHC.occNameString . GHC.rdrNameOcc
 sumWith :: (a -> Int) -> [a] -> Int
 sumWith f = sum . map f
 
--- visitExp' exp =  (visitExp exp)
-
 visitExp :: Exp -> Int
 visitExp GHC.HsIf {}            = 1
 visitExp (GHC.HsMultiIf _ alts) = length alts - 1
 visitExp (GHC.HsLamCase mg)     = length (GHC.unLoc . GHC.mg_alts $ mg) - 1
--- HsLamCase (MatchGroup id (LHsExpr id))
 visitExp (GHC.HsCase _ mg)      = length (GHC.unLoc . GHC.mg_alts $ mg) - 1
 visitExp _                      = 0
 

@@ -1,5 +1,4 @@
 resolver: lts-11.6
 
-extra-deps:
-
+extra-deps: [dirstream-1.0.3]
 
