@@ -20,8 +20,6 @@ allFiles path = do
     isFile <- liftIO $ doesFileExist path
     if isFile then each [path] >-> P.filter (".hs" `isSuffixOf`)
               else every $ hsFilesIn path
-                    -- find path (glob "*.hs" <> regular)
-                   -- TODO: reimplement this, or the whole "allFiles" function.
 
 -- | List the regular files in a directory.
 hsFilesIn :: MonadSafe m => FilePath -> ListT m FilePath

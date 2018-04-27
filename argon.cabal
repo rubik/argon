@@ -69,7 +69,6 @@ library
                      , filepath
   default-language:    Haskell2010
   ghc-options:         -Wall
-                       -Werror
                        -Wcompat
                        -Wincomplete-record-updates
                        -Wincomplete-uni-patterns
@@ -105,7 +104,7 @@ test-suite argon-test
                      , filepath
                      , pipes
                      , pipes-safe
-  ghc-options:         -Wall -Werror
+  ghc-options:         -Wall
                        -threaded -rtsopts -with-rtsopts=-N
                        
   default-language:    Haskell2010
@@ -120,7 +119,6 @@ test-suite style
                      , hlint
   default-language:    Haskell2010
   ghc-options:         -Wall
-                       -Werror
 
 source-repository head
   type:     git

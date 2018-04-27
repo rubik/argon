@@ -145,11 +145,3 @@ script:
       ;;
   esac
   set +ex
-    
-after_script:
-- |
-  case "$BUILD" in
-       stack)
-         ./shc argon argon-test
-         ;;
-     esac
