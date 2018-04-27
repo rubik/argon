@@ -48,7 +48,7 @@ realSpan :: Int -> Int -> GHC.SrcSpan
 realSpan a b = GHC.mkSrcSpan (mkLoc a b) $ mkLoc (-a) (b + 24)
     where mkLoc = GHC.mkSrcLoc (GHC.mkFastString "real loc")
 
-shouldContainError :: FilePath -> String -> Expectation
+shouldContainError :: HasCallStack => FilePath -> String -> Expectation
 shouldContainError f err = do
     r <- analyze defaultConfig (path f)
     case r of
@@ -159,14 +159,14 @@ spec = do
 -- The analysis of "missingmacros.hs" will succeed in newest GHC versions.
             it "catches syntax errors (missing cabal macros)" $
                 "missingmacros.hs" `shouldContainError`
-                "2:0  error: missing binary operator before token "
+                "error: missing binary operator before token "
 #endif
             it "catches syntax errors (missing include dir)" $
                 "missingincluded.hs" `shouldContainError`
-                "fatal error: necessaryInclude.h: No such file or directory"
+                "fatal error: necessaryInclude.h"
             it "catches CPP parsing errors" $
                  "cpp-error.hs" `shouldContainError`
-                 "2:0  error: unterminated #else"
+                 "error: unterminated"
         describe "config" $ do
             it "reads default extensions from Cabal file" $
                 ("missingcpp.hs", unsafePerformIO

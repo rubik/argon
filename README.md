@@ -42,8 +42,52 @@ add some packages to your `stack.yaml` file.
 
 #### GHC compatibility
 
-Argon is compatible with GHC 7.8 and 7.10, it's tested against those versions
-only.
+Argon is compatible with GHC version 8.0.2 and above. In the
+[releases](https://github.com/rubik/argon/releases) page you can find binaries
+for older versions of `argon` which support GHC versions 7.8 and 7.10.
+
+### About the complexity being measured
+
+`argon` will compute the [cyclomatic
+complexity](https://en.wikipedia.org/wiki/Cyclomatic_complexity) of Haskell
+functions, which is the number of decisions in a block of code plus 1. For
+instance the following function:
+
+```haskell
+func n = case n of
+           2 -> 3
+           4 -> 6
+           _ -> 42
+```
+
+has a cyclomatic complexity of 3.
+
+The boolean operators `&&` and `||` also affect the this number. For instance
+the following function:
+
+```haskell
+g n = n < 68 && n `mod` 3 == 2 && n > 49
+```
+has a cyclomatic complexity of 3.
+
+As a last example, the following function:
+
+```haskell
+func n = case n of
+           2 -> 3
+           4 -> 6
+           _ -> if 0 < n
+                then 7
+                else 8
+```
+
+has a cyclomatic complexity of 5.
+
+Cyclomatic complexity provides a very shallow metric of code complexity: a high
+cyclomatic complexity number does not necessarily mean that the function is
+complex, and conversely, a low number does not necessarily indicate that the
+function is simple. However, this number it can be useful for highlighting
+potential maintainability issues.
 
 ### Running
 
