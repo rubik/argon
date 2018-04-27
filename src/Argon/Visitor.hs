@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Argon.Visitor (funcsCC)
     where
 
@@ -53,8 +54,13 @@ sumWith f = sum . map f
 visitExp :: Exp -> Int
 visitExp GHC.HsIf {}            = 1
 visitExp (GHC.HsMultiIf _ alts) = length alts - 1
+#if __GLASGOW_HASKELL__ < 820
+visitExp (GHC.HsCase _ alts)    = length (GHC.unLoc . GHC.mg_alts $ alts) - 1
+visitExp (GHC.HsLamCase _ alts) = length (GHC.unLoc . GHC.mg_alts $ alts) - 1
+#else
 visitExp (GHC.HsLamCase mg)     = length (GHC.unLoc . GHC.mg_alts $ mg) - 1
 visitExp (GHC.HsCase _ mg)      = length (GHC.unLoc . GHC.mg_alts $ mg) - 1
+#endif
 visitExp _                      = 0
 
 visitOp :: Exp -> Int

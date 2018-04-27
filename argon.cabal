@@ -33,7 +33,7 @@ extra-source-files:
     test/tree/*.txt
     test/tree/sub/*.hs
     test/tree/sub2/*.hs
-tested-with: GHC >= 7.8 && < 8.5
+tested-with: GHC >= 8.0.2 && GHC < 9
 
 library
   hs-source-dirs:      src
