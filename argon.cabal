@@ -21,7 +21,6 @@ description:
     JSON.
 extra-source-files:
     stack.yaml
-    stack-7.8.yaml
     README.md
     CHANGELOG.md
     USAGE.txt
@@ -33,7 +32,7 @@ extra-source-files:
     test/tree/*.txt
     test/tree/sub/*.hs
     test/tree/sub2/*.hs
-tested-with: GHC >= 8.0.2 && GHC < 9
+tested-with: GHC >= 8.0.2 && < 9
 
 library
   hs-source-dirs:      src
