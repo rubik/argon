@@ -55,6 +55,7 @@ matrix:
     
   allow_failures:
   - env: BUILD=cabal GHCVER=head  CABALVER=head HAPPYVER=1.19.5 ALEXVER=3.1.7
+  - env: BUILD=cabal GHCVER=8.2.2 CABALVER=2.0 HAPPYVER=1.19.5 ALEXVER=3.1.7 # TODO: I need to figure out why this one fails with /home/travis/.cabal/logs/ghc-8.2.2/integer-logarithms-1.0.2.1-2a6l3Ge7uAMKtkov70g6We.log: openFile: does not exist (No such file or directory)
   - env: BUILD=stack ARGS="--resolver nightly"
 
 
