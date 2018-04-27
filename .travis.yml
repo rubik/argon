@@ -58,9 +58,9 @@ matrix:
   - env: BUILD=cabal GHCVER=8.2.2 CABALVER=2.0 HAPPYVER=1.19.5 ALEXVER=3.1.7 # TODO: I need to figure out why this one fails with /home/travis/.cabal/logs/ghc-8.2.2/integer-logarithms-1.0.2.1-2a6l3Ge7uAMKtkov70g6We.log: openFile: does not exist (No such file or directory)
   - env: BUILD=stack ARGS="--resolver nightly"
   # TODO: on MacOS it the following builds will fail with `error: non-portable path to file '".stack-work/dist/x86_64-osx/Cabal-2.0.1.0/build/Argon/autogen/cabal_macros.h"';`
-  - env: BUILD=stack ARGS=""
+  - env: BUILD=stack
     compiler: ": #stack default osx"
-  - env: BUILD=stack ARGS=""
+  - env: BUILD=stack
     compiler: ": #stack 8.2.2 osx"
 
 
