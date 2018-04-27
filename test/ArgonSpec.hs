@@ -1,28 +1,33 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module ArgonSpec (spec)
     where
 
-import Data.List (sort, isPrefixOf)
-import Data.Aeson (encode)
-import Text.Printf (printf)
+import           Data.Aeson          (encode)
+import           Data.List           (sort)
+import           GHC.Stack           (HasCallStack)
+import           Text.Printf         (printf)
 #if __GLASGOW_HASKELL__ < 710
-import Control.Applicative ((<$>), (<*>))
+import           Control.Applicative ((<$>), (<*>))
 #endif
-import Test.Hspec
-import Test.QuickCheck
-import System.FilePath ((</>))
-import System.IO.Unsafe (unsafePerformIO)
-import System.Console.ANSI
-import qualified SrcLoc     as GHC
-import qualified FastString as GHC
-import Pipes
---import Pipes.Safe (SafeT, runSafeT)
-import qualified Pipes.Prelude as P
+import qualified FastString          as GHC
+import           Pipes               (Producer, (>->), each)
+import qualified SrcLoc              as GHC
+import           System.Console.ANSI (Color (..), ConsoleIntensity(BoldIntensity), setSGRCode,
+                                      SGR(SetColor, SetConsoleIntensity),
+                                      ConsoleLayer(Foreground), ColorIntensity(Dull))
+import           System.FilePath     ((</>))
+import           System.IO.Unsafe    (unsafePerformIO)
+import           Test.Hspec          (describe, it, Expectation, shouldBe,
+                                      shouldContain, Spec, expectationFailure,
+                                      shouldReturn)
+import           Test.QuickCheck     (Arbitrary, arbitrary, shrink, property, elements)
 
-import Argon
+import qualified Pipes.Prelude       as P
+
+import           Argon
 
 instance Arbitrary ComplexityBlock where
     arbitrary = (\a b c -> CC (a, b, c)) <$> arbitrary
@@ -31,7 +36,7 @@ instance Arbitrary ComplexityBlock where
     shrink (CC t) = map CC $ shrink t
 
 instance Arbitrary OutputMode where
-
+    arbitrary = elements [BareText, Colored, JSON]
 
 ones :: Loc
 ones = (1, 1)
@@ -43,17 +48,20 @@ realSpan :: Int -> Int -> GHC.SrcSpan
 realSpan a b = GHC.mkSrcSpan (mkLoc a b) $ mkLoc (-a) (b + 24)
     where mkLoc = GHC.mkSrcLoc (GHC.mkFastString "real loc")
 
-errStartsWith :: String -> (FilePath, AnalysisResult) -> Bool
-errStartsWith _ (_, Right _)  = False
-errStartsWith p (_, Left msg) = p `isPrefixOf` msg
+shouldContainError :: FilePath -> String -> Expectation
+shouldContainError f err = do
+    r <- analyze defaultConfig (path f)
+    case r of
+        (_, Right _)  -> expectationFailure $ "Test did not fail" ++ show r
+        (_, Left msg) -> msg `shouldContain` err
 
 path :: String -> FilePath
 path f = "test" </> "data" </> f
 
-shouldAnalyze :: String -> AnalysisResult -> Expectation
+shouldAnalyze :: HasCallStack => String -> AnalysisResult -> Expectation
 shouldAnalyze f = shouldAnalyzeC (f, defaultConfig)
 
-shouldAnalyzeC :: (String, Config) -> AnalysisResult -> Expectation
+shouldAnalyzeC :: HasCallStack => (String, Config) -> AnalysisResult -> Expectation
 shouldAnalyzeC (f, config) r = analyze config p `shouldReturn` (p, r)
     where p = path f
 
@@ -138,26 +146,27 @@ spec = do
                 "arrows.hs" `shouldAnalyze` Right [CC (lo 7, "getAnchor", 1)]
         describe "errors" $ do
             it "catches syntax errors" $
-                "syntaxerror.hs" `shouldAnalyze`
-                    Left ("2:1 parse error (possibly incorrect indentation" ++
-                          " or mismatched brackets)")
+                "syntaxerror.hs" `shouldContainError`
+                "parse error (possibly incorrect indentation or mismatched brackets)"
             it "catches syntax errors (missing CPP)" $
                 "missingcpp.hs" `shouldAnalyze`
+#if __GLASGOW_HASKELL__ < 800
                     Left "1:2 lexical error at character 'i'"
+#else
+                    Left "1:1 parse error on input \8216#\8217"
+#endif
+#if __GLASGOW_HASKELL__ < 800
+-- The analysis of "missingmacros.hs" will succeed in newest GHC versions.
             it "catches syntax errors (missing cabal macros)" $
-                unsafePerformIO (analyze defaultConfig (path "missingmacros.hs"))
-                    `shouldSatisfy`
-                    errStartsWith ("2:0  error: missing binary operator " ++
-                                   "before token ")
+                "missingmacros.hs" `shouldContainError`
+                "2:0  error: missing binary operator before token "
+#endif
             it "catches syntax errors (missing include dir)" $
-                unsafePerformIO (analyze defaultConfig (path "missingincluded.hs"))
-                    `shouldSatisfy`
-                    errStartsWith ("2:0  fatal error: necessaryInclude.h: "
-                                  ++ "No such file or directory")
+                "missingincluded.hs" `shouldContainError`
+                "fatal error: necessaryInclude.h: No such file or directory"
             it "catches CPP parsing errors" $
-                unsafePerformIO (analyze defaultConfig (path "cpp-error.hs"))
-                    `shouldSatisfy`
-                    errStartsWith "2:0  error: unterminated #else"
+                 "cpp-error.hs" `shouldContainError`
+                 "2:0  error: unterminated #else"
         describe "config" $ do
             it "reads default extensions from Cabal file" $
                 ("missingcpp.hs", unsafePerformIO
@@ -177,10 +186,12 @@ spec = do
                         return $ defaultConfig { exts = loadedExts }))
                     `shouldAnalyzeC`
                     Right [CC (lo 4, "f", 1)]
+#if __GLASGOW_HASKELL__ < 800
             it "includes Cabal macros for preprocessing" $
                 ( "missingmacros.hs"
                 , defaultConfig { headers = [path "cabal_macros.h"] }
                 ) `shouldAnalyzeC` Right [CC (lo 3, "f", 2)]
+#endif
             it "includes directory from include-dir for preprocessing" $
                 ( "missingincluded.hs"
                 , defaultConfig { includeDirs = [path "include"] }

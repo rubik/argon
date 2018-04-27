@@ -2,24 +2,24 @@
 module Argon.Cabal (parseExts)
     where
 
-import Data.List (nub)
+import           Data.List                             (nub)
 #if __GLASGOW_HASKELL__ < 710
-import Control.Applicative ((<$>))
+import           Control.Applicative                   ((<$>))
 #endif
 
-import qualified Language.Haskell.Extension            as Dist
-import qualified Distribution.Verbosity                as Dist
 import qualified Distribution.PackageDescription       as Dist
 import qualified Distribution.PackageDescription.Parse as Dist
+import qualified Distribution.Verbosity                as Dist
+import qualified Language.Haskell.Extension            as Dist
 
 
 -- | Parse the given Cabal file generate a list of GHC extension flags. The
 --   extension names are read from the default-extensions field in the library
 --   section.
 parseExts :: FilePath -> IO [String]
-parseExts path = extract <$> Dist.readPackageDescription Dist.silent path
+parseExts path = extract <$> Dist.readGenericPackageDescription Dist.silent path
     where extract pkg = maybe [] extFromBI $
-            (Dist.libBuildInfo . Dist.condTreeData) <$> Dist.condLibrary pkg
+            Dist.libBuildInfo . Dist.condTreeData <$> Dist.condLibrary pkg
 
 extFromBI :: Dist.BuildInfo -> [String]
 extFromBI binfo = map toString . nub $ allExts
