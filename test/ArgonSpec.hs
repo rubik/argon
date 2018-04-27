@@ -24,8 +24,8 @@ import           Test.Hspec          (describe, it, Expectation, shouldBe,
                                       shouldContain, Spec, expectationFailure,
                                       shouldReturn)
 import           Test.QuickCheck     (Arbitrary, arbitrary, shrink, property, elements)
-
 import qualified Pipes.Prelude       as P
+import           Data.Foldable       (traverse_)
 
 import           Argon
 
@@ -48,12 +48,12 @@ realSpan :: Int -> Int -> GHC.SrcSpan
 realSpan a b = GHC.mkSrcSpan (mkLoc a b) $ mkLoc (-a) (b + 24)
     where mkLoc = GHC.mkSrcLoc (GHC.mkFastString "real loc")
 
-shouldContainError :: HasCallStack => FilePath -> String -> Expectation
-shouldContainError f err = do
+shouldContainErrors :: HasCallStack => FilePath -> [String] -> Expectation
+shouldContainErrors f errs = do
     r <- analyze defaultConfig (path f)
     case r of
         (_, Right _)  -> expectationFailure $ "Test did not fail" ++ show r
-        (_, Left msg) -> msg `shouldContain` err
+        (_, Left msg) -> traverse_ (msg `shouldContain`) errs
 
 path :: String -> FilePath
 path f = "test" </> "data" </> f
@@ -146,8 +146,8 @@ spec = do
                 "arrows.hs" `shouldAnalyze` Right [CC (lo 7, "getAnchor", 1)]
         describe "errors" $ do
             it "catches syntax errors" $
-                "syntaxerror.hs" `shouldContainError`
-                "parse error (possibly incorrect indentation or mismatched brackets)"
+                "syntaxerror.hs" `shouldContainErrors`
+                ["parse error (possibly incorrect indentation or mismatched brackets)"]
             it "catches syntax errors (missing CPP)" $
                 "missingcpp.hs" `shouldAnalyze`
 #if __GLASGOW_HASKELL__ < 800
@@ -158,15 +158,15 @@ spec = do
 #if __GLASGOW_HASKELL__ < 800
 -- The analysis of "missingmacros.hs" will succeed in newest GHC versions.
             it "catches syntax errors (missing cabal macros)" $
-                "missingmacros.hs" `shouldContainError`
-                "error: missing binary operator before token "
+                "missingmacros.hs" `shouldContainErrors`
+                ["error: missing binary operator before token "]
 #endif
             it "catches syntax errors (missing include dir)" $
-                "missingincluded.hs" `shouldContainError`
-                "fatal error: necessaryInclude.h"
+                "missingincluded.hs" `shouldContainErrors`
+                ["fatal error", "necessaryInclude.h"]
             it "catches CPP parsing errors" $
-                 "cpp-error.hs" `shouldContainError`
-                 "error: unterminated"
+                 "cpp-error.hs" `shouldContainErrors`
+                 ["error: unterminated"]
         describe "config" $ do
             it "reads default extensions from Cabal file" $
                 ("missingcpp.hs", unsafePerformIO
