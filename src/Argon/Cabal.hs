@@ -17,7 +17,7 @@ import qualified Language.Haskell.Extension            as Dist
 --   extension names are read from the default-extensions field in the library
 --   section.
 parseExts :: FilePath -> IO [String]
-#if __GLASGOW_HASKELL__ < 820
+#if __GLASGOW_HASKELL__ < 802
 parseExts path = extract <$> Dist.readPackageDescription Dist.silent path
 #else
 parseExts path = extract <$> Dist.readGenericPackageDescription Dist.silent path

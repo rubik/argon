@@ -54,7 +54,7 @@ sumWith f = sum . map f
 visitExp :: Exp -> Int
 visitExp GHC.HsIf {}            = 1
 visitExp (GHC.HsMultiIf _ alts) = length alts - 1
-#if __GLASGOW_HASKELL__ < 820
+#if __GLASGOW_HASKELL__ < 802
 visitExp (GHC.HsCase _ alts)    = length (GHC.unLoc . GHC.mg_alts $ alts) - 1
 visitExp (GHC.HsLamCase _ alts) = length (GHC.unLoc . GHC.mg_alts $ alts) - 1
 #else
