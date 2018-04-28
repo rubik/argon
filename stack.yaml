@@ -1,11 +1,4 @@
-flags: {}
-extra-package-dbs: []
-packages:
-- '.'
-extra-deps:
-- docopt-0.7.0.4
-- hierarchy-0.3.1
-- pipes-files-0.1.1
-- posix-paths-0.2.1.0
-- fail-4.9.0.0
-resolver: lts-6.3
+resolver: lts-11.6
+
+extra-deps: [dirstream-1.0.3]
+
