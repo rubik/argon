@@ -40,10 +40,16 @@ complexity :: Function -> Int
 complexity f = let matches = getMatches f
                    query = everythingStaged Parser (+) 0 $ 0 `mkQ` visit
                    visit = uncurry (+) . (visitExp &&& visitOp)
-                in length matches + sumWith query matches
+                in length matches + sumWith getGRHSsFromMatch matches + sumWith query matches
 
 getMatches :: Function -> [GHC.LMatch GHC.RdrName MatchBody]
 getMatches = GHC.unLoc . GHC.mg_alts . GHC.fun_matches
+
+getGRHSsFromMatch :: GHC.LMatch GHC.RdrName MatchBody -> Int
+getGRHSsFromMatch match = length (getGRHSs' match) - 1
+  where
+    getGRHSs' :: GHC.LMatch GHC.RdrName MatchBody -> [GHC.LGRHS GHC.RdrName MatchBody]
+    getGRHSs' = GHC.grhssGRHSs . GHC.m_grhss . GHC.unLoc
 
 getName :: GHC.RdrName -> String
 getName = GHC.occNameString . GHC.rdrNameOcc
