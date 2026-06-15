@@ -1,4 +1,0 @@
-resolver: lts-11.6
-
-extra-deps: [dirstream-1.0.3]
-
