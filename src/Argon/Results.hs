@@ -11,14 +11,20 @@ import Control.Applicative ((<*), (*>))
 #endif
 
 import Data.Aeson (encode)
+import Data.Functor.Const (Const(..))
 import Pipes
 import Pipes.Group
 import qualified Pipes.Prelude as P
 import qualified Pipes.ByteString as PB
-import Lens.Simple ((^.))
 
 import Argon.Formatters
 import Argon.Types
+
+
+-- | Read the focus of a van Laarhoven lens. Inlined here so we don't need a
+--   lens dependency just for 'Pipes.Group.chunksOf'.
+view :: ((a -> Const a a) -> s -> Const a s) -> s -> a
+view l s = getConst (l Const s)
 
 
 -- sortOn is built-in only in base 4.8.0.0 onwards
@@ -71,4 +77,4 @@ jsonStream :: (MonadIO m)
 jsonStream source = yield "[" *> intersperse' "," source <* yield "]\n"
 
 intersperse' :: Monad m => a -> Producer a m r -> Producer a m r
-intersperse' a producer = intercalates (yield a) (producer ^. chunksOf 1)
+intersperse' a producer = intercalates (yield a) (view (chunksOf 1) producer)

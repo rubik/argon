@@ -1,25 +1,18 @@
--- The following code is taken and modified from ghc-exactprint, because adding
--- a dependency for just one module and then adding wrappers for that module
--- seemed excessive.
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE RecordWildCards #-}
--- | This module provides support for CPP and interpreter directives.
+-- | This module provides support for the C pre-processor. Because
+--   'ghc-lib-parser' does not ship GHC's driver pipeline, CPP is handled
+--   in-process by the pure-Haskell 'cpphs' library instead of shelling out to
+--   the system preprocessor.
 module Argon.Preprocess
    (
      CppOptions(..)
    , defaultCppOptions
-   , getPreprocessedSrcDirect
+   , runPreprocessor
    ) where
 
-#if __GLASGOW_HASKELL__ < 710
-import Control.Applicative ((<$>))
-#endif
-import qualified GHC
-import qualified DynFlags       as GHC
-import qualified MonadUtils     as GHC
-import qualified DriverPhases   as GHC
-import qualified DriverPipeline as GHC
-import qualified HscTypes       as GHC
+import Language.Preprocessor.Cpphs
+    ( CpphsOptions(..), BoolOptions(..)
+    , defaultCpphsOptions, defaultBoolOptions, runCpphs )
 
 data CppOptions = CppOptions
                 { cppDefine :: [String]    -- ^ CPP #define macros
@@ -31,30 +24,23 @@ data CppOptions = CppOptions
 defaultCppOptions :: CppOptions
 defaultCppOptions = CppOptions [] [] []
 
-getPreprocessedSrcDirect :: (GHC.GhcMonad m)
-                         => CppOptions
-                         -> FilePath
-                         -> m (String, GHC.DynFlags)
-getPreprocessedSrcDirect cppOptions file = do
-  hscEnv <- GHC.getSession
-  let dfs = GHC.hsc_dflags hscEnv
-      newEnv = hscEnv { GHC.hsc_dflags = injectCppOptions cppOptions dfs }
-  (dflags', hspp_fn) <-
-      GHC.liftIO $ GHC.preprocess newEnv (file, Just (GHC.Cpp GHC.HsSrcFile))
-  txt <- GHC.liftIO $ readFile hspp_fn
-  return (txt, dflags')
+-- | Run the C pre-processor over the given source contents. cpphs is told to
+--   emit Haskell @{-\# LINE \#-}@ pragmas ('locations' on, 'hashline' off) so
+--   that downstream parse locations still refer to the original source lines.
+runPreprocessor :: CppOptions -> FilePath -> String -> IO String
+runPreprocessor cppOptions = runCpphs (toCpphsOptions cppOptions)
 
-injectCppOptions :: CppOptions -> GHC.DynFlags -> GHC.DynFlags
-injectCppOptions CppOptions{..} dflags =
-  foldr addOptP dflags (map mkDefine cppDefine ++ map mkIncludeDir cppInclude
-                                               ++ map mkInclude cppFile)
+toCpphsOptions :: CppOptions -> CpphsOptions
+toCpphsOptions CppOptions{..} = defaultCpphsOptions
+    { defines    = map parseDefine cppDefine
+    , includes   = cppInclude
+    , preInclude = cppFile
+    , boolopts   = defaultBoolOptions { locations = True
+                                      , hashline  = False
+                                      , lang      = True
+                                      }
+    }
   where
-    mkDefine     = ("-D" ++)
-    mkIncludeDir = ("-I" ++)
-    mkInclude    = ("-include" ++)
-
-addOptP :: String -> GHC.DynFlags -> GHC.DynFlags
-addOptP f = alterSettings (\s -> s { GHC.sOpt_P   = f : GHC.sOpt_P s})
-
-alterSettings :: (GHC.Settings -> GHC.Settings) -> GHC.DynFlags -> GHC.DynFlags
-alterSettings f dflags = dflags { GHC.settings = f (GHC.settings dflags) }
+    parseDefine d = case break (== '=') d of
+                      (name, '=':val) -> (name, val)
+                      (name, _)       -> (name, "1")

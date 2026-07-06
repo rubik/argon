@@ -36,15 +36,16 @@
 
 ### Installing
 
-Simple as ``stack install argon`` or ``cabal install argon``.
-Note: if you are using Stack and your resolver if too old, you might have to
-add some packages to your `stack.yaml` file.
+Simple as ``cabal install argon``.
 
 #### GHC compatibility
 
-Argon is compatible with GHC version 8.0.2 and above. In the
-[releases](https://github.com/rubik/argon/releases) page you can find binaries
-for older versions of `argon` which support GHC versions 7.8 and 7.10.
+Argon parses Haskell using the standalone
+[`ghc-lib-parser`](https://hackage.haskell.org/package/ghc-lib-parser), so it is
+independent of the compiler used to build it. It builds with modern GHC (tested
+with GHC 9.10) and understands the Haskell syntax of its pinned `ghc-lib-parser`
+(currently the 9.12 series). Older `argon` releases targeting GHC 7.8–8.x can be
+found on the [releases](https://github.com/rubik/argon/releases) page.
 
 ### About the complexity being measured
 
@@ -94,27 +95,37 @@ potential maintainability issues.
 The Argon executable expects a list of file paths (files or directories):
 
     $ argon --no-color --min 2 src
-    src/Argon/Types.hs
-        61:5 toJSON - 2
-    src/Argon/Visitor.hs
-        55:1 visitExp - 5
-        62:1 visitOp - 4
-        28:11 visit - 2
-        35:1 getFuncName - 2
-    src/Argon/Parser.hs
-        55:1 parseModuleWithCpp - 3
-        88:1 customLogAction - 3
-        35:1 analyze - 2
-        39:9 analysis - 2
     src/Argon/Formatters.hs
-        61:1 formatResult - 3
         42:1 coloredFunc - 2
         43:11 color - 2
-    src/Argon/Results.hs
-        35:1 export - 3
-        28:1 filterResults - 2
+        57:1 formatResult - 2
+    src/Argon/SYB/Utils.hs
+        20:1 everythingStaged - 2
+    src/Argon/Preprocess.hs
+        34:1 toCpphsOptions - 2
+        44:5 parseDefine - 2
     src/Argon/Loc.hs
-        18:11 toRealSrcLoc - 2
+        20:11 toRealSrcLoc - 2
+    src/Argon/Walker.hs
+        22:1 walk - 4
+        15:1 allFiles - 2
+    src/Argon/Results.hs
+        46:1 filterNulls - 3
+        66:1 exportStream - 3
+        56:1 filterResults - 2
+    src/Argon/Parser.hs
+        67:1 parseModuleWithCpp - 3
+        42:1 analyze - 2
+        46:9 analysis - 2
+        105:1 renderError - 2
+    src/Argon/Cabal.hs
+        23:11 toString - 3
+    src/Argon/Types.hs
+        81:5 toJSON - 2
+    src/Argon/Visitor.hs
+        61:1 visitExp - 6
+        71:1 visitOp - 4
+        30:11 visit - 2
 
 For every file, Argon sorts results with the following criteria (and in this
 order):
@@ -139,54 +150,78 @@ Results can also be exported to JSON:
 ```json
 $ argon --json --min 2 src
 [
-  { "blocks": [ ], "path": "src/Argon.hs", "type": "result" },
-  {
-    "blocks": [{ "complexity": 2, "name": "toJSON", "lineno": 61, "col": 5 }],
-    "path": "src/Argon/Types.hs",
-    "type": "result"
-  },
   {
     "blocks": [
-      { "complexity": 5, "name": "visitExp", "lineno": 55, "col": 1 },
-      { "complexity": 4, "name": "visitOp", "lineno": 62, "col": 1 },
-      { "complexity": 2, "name": "visit", "lineno": 28, "col": 11 },
-      { "complexity": 2, "name": "getFuncName", "lineno": 35, "col": 1 }
-    ],
-    "path": "src/Argon/Visitor.hs",
-    "type": "result"
-  },
-  {
-    "blocks": [
-      { "complexity": 3, "name": "parseModuleWithCpp", "lineno": 55, "col": 1 },
-      { "complexity": 3, "name": "customLogAction", "lineno": 88, "col": 1 },
-      { "complexity": 2, "name": "analyze", "lineno": 35, "col": 1 },
-      { "complexity": 2, "name": "analysis", "lineno": 39, "col": 9 }
-    ],
-    "path": "src/Argon/Parser.hs",
-    "type": "result"
-  },
-  {
-    "blocks": [
-      { "complexity": 3, "name": "formatResult", "lineno": 61, "col": 1 },
-      { "complexity": 2, "name": "coloredFunc", "lineno": 42, "col": 1 },
-      { "complexity": 2, "name": "color", "lineno": 43, "col": 11 }
+      { "col": 1, "complexity": 2, "lineno": 42, "name": "coloredFunc" },
+      { "col": 11, "complexity": 2, "lineno": 43, "name": "color" },
+      { "col": 1, "complexity": 2, "lineno": 57, "name": "formatResult" }
     ],
     "path": "src/Argon/Formatters.hs",
     "type": "result"
   },
   {
+    "blocks": [{ "col": 1, "complexity": 2, "lineno": 20, "name": "everythingStaged" }],
+    "path": "src/Argon/SYB/Utils.hs",
+    "type": "result"
+  },
+  {
     "blocks": [
-      { "complexity": 3, "name": "export", "lineno": 35, "col": 1 },
-      { "complexity": 2, "name": "filterResults", "lineno": 28, "col": 1 }
+      { "col": 1, "complexity": 2, "lineno": 34, "name": "toCpphsOptions" },
+      { "col": 5, "complexity": 2, "lineno": 44, "name": "parseDefine" }
+    ],
+    "path": "src/Argon/Preprocess.hs",
+    "type": "result"
+  },
+  {
+    "blocks": [{ "col": 11, "complexity": 2, "lineno": 20, "name": "toRealSrcLoc" }],
+    "path": "src/Argon/Loc.hs",
+    "type": "result"
+  },
+  {
+    "blocks": [
+      { "col": 1, "complexity": 4, "lineno": 22, "name": "walk" },
+      { "col": 1, "complexity": 2, "lineno": 15, "name": "allFiles" }
+    ],
+    "path": "src/Argon/Walker.hs",
+    "type": "result"
+  },
+  {
+    "blocks": [
+      { "col": 1, "complexity": 3, "lineno": 46, "name": "filterNulls" },
+      { "col": 1, "complexity": 3, "lineno": 66, "name": "exportStream" },
+      { "col": 1, "complexity": 2, "lineno": 56, "name": "filterResults" }
     ],
     "path": "src/Argon/Results.hs",
     "type": "result"
   },
   {
-    "blocks": [{ "complexity": 2, "name": "toRealSrcLoc", "lineno": 18, "col": 11 }],
-    "path": "src/Argon/Loc.hs",
+    "blocks": [
+      { "col": 1, "complexity": 3, "lineno": 67, "name": "parseModuleWithCpp" },
+      { "col": 1, "complexity": 2, "lineno": 42, "name": "analyze" },
+      { "col": 9, "complexity": 2, "lineno": 46, "name": "analysis" },
+      { "col": 1, "complexity": 2, "lineno": 105, "name": "renderError" }
+    ],
+    "path": "src/Argon/Parser.hs",
     "type": "result"
   },
-  { "blocks": [ ], "path": "src/Argon/Preprocess.hs", "type": "result" }
+  {
+    "blocks": [{ "col": 11, "complexity": 3, "lineno": 23, "name": "toString" }],
+    "path": "src/Argon/Cabal.hs",
+    "type": "result"
+  },
+  {
+    "blocks": [{ "col": 5, "complexity": 2, "lineno": 81, "name": "toJSON" }],
+    "path": "src/Argon/Types.hs",
+    "type": "result"
+  },
+  {
+    "blocks": [
+      { "col": 1, "complexity": 6, "lineno": 61, "name": "visitExp" },
+      { "col": 1, "complexity": 4, "lineno": 71, "name": "visitOp" },
+      { "col": 11, "complexity": 2, "lineno": 30, "name": "visit" }
+    ],
+    "path": "src/Argon/Visitor.hs",
+    "type": "result"
+  }
 ]
 ```

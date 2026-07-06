@@ -1,5 +1,6 @@
 *.sw[eop]
 dist/
+dist-newstyle/
 cabal-dev
 *.o
 *.hi
@@ -11,7 +12,6 @@ cabal-dev
 .hpc
 .hsenv
 .cabal-sandbox/
-.stack-work/
 cabal.sandbox.config
 *.prof
 *.aux

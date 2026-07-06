@@ -1,22 +1,28 @@
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE TypeApplications #-}
 module Argon.Parser (LModule, analyze, parseModule)
     where
 
-import Control.Monad (void)
 import qualified Control.Exception as E
+import Data.Either (fromRight)
 
-import qualified GHC hiding (parseModule)
-import qualified SrcLoc       as GHC
-import qualified Lexer        as GHC
-import qualified Parser       as GHC
-import qualified DynFlags     as GHC
-import qualified GHC.LanguageExtensions as GHC
-import qualified HeaderInfo   as GHC
-import qualified MonadUtils   as GHC
-import qualified Outputable   as GHC
-import qualified FastString   as GHC
-import qualified StringBuffer as GHC
-import GHC.Paths (libdir)
+import GHC.Hs                       (HsModule)
+import GHC.Hs.Extension             (GhcPs)
+import GHC.Types.SrcLoc             (Located, noLoc)
+import GHC.Driver.Session           (DynFlags, defaultDynFlags, xopt
+                                    , parseDynamicFlagsCmdLine)
+import qualified GHC.LanguageExtensions as LangExt
+import GHC.Parser.Lexer             (ParseResult(POk, PFailed), PState
+                                    , getPsErrorMessages)
+import GHC.Types.Error              (getMessages, MsgEnvelope(..)
+                                    , diagnosticMessage, defaultDiagnosticOpts
+                                    , unDecorated)
+import GHC.Parser.Errors.Types      (PsMessage)
+import GHC.Utils.Outputable         (showSDocUnsafe)
+import GHC.Data.Bag                 (bagToList)
+
+import Language.Haskell.GhclibParserEx.GHC.Parser          (parseFile)
+import Language.Haskell.GhclibParserEx.GHC.Driver.Session  (parsePragmasIntoDynFlags)
+import Language.Haskell.GhclibParserEx.GHC.Settings.Config (fakeSettings)
 
 import Argon.Preprocess
 import Argon.Visitor (funcsCC)
@@ -25,7 +31,7 @@ import Argon.Loc
 
 -- | Type synonym for a syntax node representing a module tagged with a
 --   'SrcSpan'
-type LModule = GHC.Located (GHC.HsModule GHC.RdrName)
+type LModule = Located (HsModule GhcPs)
 
 
 -- | Parse the code in the given filename and compute cyclomatic complexity for
@@ -45,8 +51,8 @@ analyze conf file = do
 handleExc :: E.SomeException -> IO (Either String LModule)
 handleExc = return . Left . show
 
--- | Parse a module with the default instructions for the C pre-processor
---   Only the includes directory is taken from the config
+-- | Parse a module with the default instructions for the C pre-processor.
+--   Only the includes directory is taken from the config.
 parseModule :: Config -> FilePath -> IO (Either String LModule)
 parseModule conf = parseModuleWithCpp conf $
     defaultCppOptions { cppInclude = includeDirs conf
@@ -58,47 +64,50 @@ parseModuleWithCpp :: Config
                    -> CppOptions
                    -> FilePath
                    -> IO (Either String LModule)
-parseModuleWithCpp conf cppOptions file =
-    GHC.runGhc (Just libdir) $ do
-      dflags <- initDynFlags conf file
-      let useCpp = GHC.xopt GHC.Cpp dflags
-      (fileContents, dflags1) <-
-        if useCpp
-           then getPreprocessedSrcDirect cppOptions file
-           else do
-               contents <- GHC.liftIO $ readFile file
-               return (contents, dflags)
-      return $
-        case parseCode dflags1 file fileContents of
-          GHC.PFailed ss m -> Left $ tagMsg (srcSpanToLoc ss)
-                                            (GHC.showSDoc dflags m)
-          GHC.POk _ pmod   -> Right pmod
+parseModuleWithCpp conf cppOptions file = do
+    raw     <- readFile file
+    dflags1 <- initDynFlags conf
+    -- Read the file's own LANGUAGE/OPTIONS pragmas (e.g. to learn whether CPP
+    -- is enabled) before deciding whether to preprocess.
+    dflags2 <- pragmaFlags dflags1 file raw
+    (contents, dflags3) <-
+        if xopt LangExt.Cpp dflags2
+           then do pp <- runPreprocessor cppOptions file raw
+                   -- Re-read pragmas: CPP may have revealed extensions that
+                   -- were hidden inside #if blocks.
+                   df <- pragmaFlags dflags2 file pp
+                   return (pp, df)
+           else return (raw, dflags2)
+    return $
+      case parseFile file dflags3 contents of
+        PFailed pst  -> Left $ renderError pst
+        POk _ pmod   -> Right pmod
 
-parseCode :: GHC.DynFlags -> FilePath -> String -> GHC.ParseResult LModule
-parseCode = runParser GHC.parseModule
+-- | Base 'DynFlags' (no real GHC installation needed) with the configured
+--   extensions enabled. Extensions are turned on via @-X@ flags so that names
+--   like @"CPP"@ map to the right extension.
+initDynFlags :: Config -> IO DynFlags
+initDynFlags conf = do
+    let dflags0 = defaultDynFlags fakeSettings
+    (dflags1, _, _) <- parseDynamicFlagsCmdLine dflags0
+        [noLoc ("-X" ++ e) | e <- exts conf]
+    return dflags1
 
-runParser :: GHC.P a -> GHC.DynFlags -> FilePath -> String -> GHC.ParseResult a
-runParser parser flags filename str = GHC.unP parser parseState
-    where location   = GHC.mkRealSrcLoc (GHC.mkFastString filename) 1 1
-          buffer     = GHC.stringToStringBuffer str
-          parseState = GHC.mkPState flags buffer location
+-- | Fold a source file's own pragmas into the given flags, ignoring pragma
+--   parse failures (the main parse will surface any real problem).
+pragmaFlags :: DynFlags -> FilePath -> String -> IO DynFlags
+pragmaFlags dflags file src =
+    fromRight dflags <$> parsePragmasIntoDynFlags dflags ([], []) file src
 
-initDynFlags :: GHC.GhcMonad m => Config -> FilePath -> m GHC.DynFlags
-initDynFlags conf file = do
-    dflags0 <- GHC.getSessionDynFlags
-    (dflags1,_,_) <- GHC.parseDynamicFlagsCmdLine dflags0
-        [GHC.L GHC.noSrcSpan ("-X" ++ e) | e <- exts conf]
-    src_opts <- GHC.liftIO $ GHC.getOptionsFromFile dflags1 file
-    (dflags2, _, _) <- GHC.parseDynamicFilePragma dflags1 src_opts
-    let dflags3 = dflags2 { GHC.log_action = customLogAction }
-    void $ GHC.setSessionDynFlags dflags3
-    return dflags3
-
-customLogAction :: GHC.LogAction
-customLogAction dflags _ severity srcSpan _ m =
-    case severity of
-      GHC.SevFatal -> throwError
-      GHC.SevError -> throwError
-      _            -> return ()
-    where throwError = E.throwIO $ GhcParseError (srcSpanToLoc srcSpan)
-                                                 (GHC.showSDoc dflags m)
+-- | Render the first parser error of a failed parse to a @line:col message@
+--   string.
+renderError :: PState -> String
+renderError pst =
+    case bagToList (getMessages (getPsErrorMessages pst)) of
+      []      -> "parse error"
+      (env:_) -> tagMsg (srcSpanToLoc (errMsgSpan env))
+                        (renderDiagnostic (errMsgDiagnostic env))
+  where
+    renderDiagnostic :: PsMessage -> String
+    renderDiagnostic = unwords . map showSDocUnsafe . unDecorated
+                     . diagnosticMessage (defaultDiagnosticOpts @PsMessage)
