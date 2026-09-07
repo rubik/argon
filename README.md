@@ -5,13 +5,9 @@
 </h1>
 
 <p align="center">
-    <a href="https://travis-ci.org/rubik/argon">
+    <a href="https://github.com/rubik/argon/actions/workflows/ci.yml">
         <img alt="Tests"
-             src="https://img.shields.io/travis/rubik/argon.svg?style=flat-square">
-    </a>
-    <a href="https://coveralls.io/github/rubik/argon">
-        <img alt="Code coverage"
-             src="https://img.shields.io/coveralls/rubik/argon.svg?style=flat-square">
+             src="https://github.com/rubik/argon/actions/workflows/ci.yml/badge.svg">
     </a>
     <a href="https://github.com/rubik/argon/blob/master/LICENSE">
         <img alt="License"

@@ -18,3 +18,4 @@ cabal.sandbox.config
 *.hp
 tmp/
 TAGS
+dist-newstyle/
