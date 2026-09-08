@@ -1,5 +1,7 @@
 packages: .
 
+tests: True
+
 -- Argon parses Haskell via the standalone, compiler-version-independent
 -- ghc-lib-parser. The version of ghc-lib-parser used by Argon must match that
 -- used by hlint used as a style check of the Argon code.
