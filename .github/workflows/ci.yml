@@ -14,8 +14,19 @@ jobs:
       - uses: haskell-actions/setup@v2
         id: setup
         with:
-          ghc-version: '9.10'
+          ghc-version: '9.14'
           cabal-version: 'latest'
+
+      - name: Set up HLint
+        uses: haskell-actions/hlint-setup@v2
+        with:
+          version: '3.10'
+
+      - name: Run HLint
+        uses: haskell-actions/hlint-run@v2
+        with:
+          path: '["app/", "src/"]'
+          fail-on: warning
 
       - name: Generate build plan
         run: cabal build all --dry-run

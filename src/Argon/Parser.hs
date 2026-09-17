@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeApplications #-}
 module Argon.Parser (LModule, analyze, parseModule)
     where
@@ -18,6 +19,9 @@ import GHC.Types.Error              (getMessages, MsgEnvelope(..)
                                     , unDecorated)
 import GHC.Parser.Errors.Types      (PsMessage)
 import GHC.Utils.Outputable         (showSDocUnsafe)
+#if MIN_VERSION_ghc_lib_parser(9,14,0)
+import GHC.Utils.Logger             (initLogger)
+#endif
 import GHC.Data.Bag                 (bagToList)
 
 import Language.Haskell.GhclibParserEx.GHC.Parser          (parseFile)
@@ -89,7 +93,12 @@ parseModuleWithCpp conf cppOptions file = do
 initDynFlags :: Config -> IO DynFlags
 initDynFlags conf = do
     let dflags0 = defaultDynFlags fakeSettings
+#if MIN_VERSION_ghc_lib_parser(9,14,0)
+    logger <- initLogger
+    (dflags1, _, _) <- parseDynamicFlagsCmdLine logger dflags0
+#else
     (dflags1, _, _) <- parseDynamicFlagsCmdLine dflags0
+#endif
         [noLoc ("-X" ++ e) | e <- exts conf]
     return dflags1
 

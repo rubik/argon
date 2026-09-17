@@ -14,8 +14,11 @@ import           Argon.Loc
 import           Argon.Types     (ComplexityBlock (..))
 
 type Exp = GHC.HsExpr GHC.GhcPs
-type Function = GHC.HsBind GHC.GhcPs
 type MatchBody = GHC.LHsExpr GHC.GhcPs
+
+data Function = Function
+    (GHC.LIdP GHC.GhcPs)
+    (GHC.MatchGroup GHC.GhcPs MatchBody)
 
 
 -- | Compute cyclomatic complexity of every function binding in the given AST.
@@ -23,18 +26,22 @@ funcsCC :: (Data from) => from -> [ComplexityBlock]
 funcsCC = map funCC . getBinds
 
 funCC :: Function -> ComplexityBlock
-funCC f = CC (getLocation $ GHC.fun_id f, getFuncName f, complexity f)
+funCC f@(Function ident _) =
+    CC (getLocation ident, getFuncName ident, complexity f)
 
 getBinds :: (Data from) => from -> [Function]
 getBinds = everythingStaged Parser (++) [] $ mkQ [] visit
-    where visit fun@GHC.FunBind {} = [fun]
-          visit _                  = []
+    where
+      visit :: GHC.HsBind GHC.GhcPs -> [Function]
+      visit GHC.FunBind { GHC.fun_id = ident, GHC.fun_matches = matches } =
+          [Function ident matches]
+      visit _ = []
 
 getLocation :: GHC.LIdP GHC.GhcPs -> Loc
 getLocation = srcSpanToLoc . GHC.getLocA
 
-getFuncName :: Function -> String
-getFuncName = getName . GHC.unLoc . GHC.fun_id
+getFuncName :: GHC.LIdP GHC.GhcPs -> String
+getFuncName = getName . GHC.unLoc
 
 complexity :: Function -> Int
 complexity f = let matches = getMatches f
@@ -43,13 +50,11 @@ complexity f = let matches = getMatches f
                 in length matches + sumWith getGRHSsFromMatch matches + sumWith query matches
 
 getMatches :: Function -> [GHC.LMatch GHC.GhcPs MatchBody]
-getMatches = GHC.unLoc . GHC.mg_alts . GHC.fun_matches
+getMatches (Function _ matches) = GHC.unLoc (GHC.mg_alts matches)
 
 getGRHSsFromMatch :: GHC.LMatch GHC.GhcPs MatchBody -> Int
-getGRHSsFromMatch match = length (getGRHSs' match) - 1
-  where
-    getGRHSs' :: GHC.LMatch GHC.GhcPs MatchBody -> [GHC.LGRHS GHC.GhcPs MatchBody]
-    getGRHSs' = GHC.grhssGRHSs . GHC.m_grhss . GHC.unLoc
+getGRHSsFromMatch match =
+    length (GHC.grhssGRHSs . GHC.m_grhss . GHC.unLoc $ match) - 1
 
 getName :: GHC.RdrName -> String
 getName = GHC.occNameString . GHC.rdrNameOcc

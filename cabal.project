@@ -3,10 +3,10 @@ packages: .
 tests: True
 
 -- Argon parses Haskell via the standalone, compiler-version-independent
--- ghc-lib-parser. The version of ghc-lib-parser used by Argon must match that
--- used by hlint used as a style check of the Argon code.
+-- ghc-lib-parser. Keep the parser and extension packages on the same GHC API
+-- release. HLint runs as an independent CI tool so it cannot constrain this
+-- package graph to the parser release embedded in HLint.
 constraints:
-    ghc-lib-parser ==9.12.3.20251228
-  , ghc-lib-parser-ex ==9.12.0.0
-  , hlint ==3.10
+    ghc-lib-parser ==9.14.1.20251220
+  , ghc-lib-parser-ex ==9.14.1.20251220
   , cpphs ==1.20.10
