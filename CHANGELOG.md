@@ -2,6 +2,14 @@
 
 This package uses [Semantic Versioning][1].
 
+## v0.4.2.0
+
+- Add support for building with GHC 9.14.
+- Update syntax analysis to `ghc-lib-parser` 9.14.
+- Add complexity analysis for guarded right-hand sides.
+- Replace the unmaintained `pipes-files` traversal and modernize the Cabal and
+  GitHub Actions build configuration.
+
 ## v0.4.0.0
 
 - Add streaming capabilities (haskell-pipes) for lower memory usage: #18.

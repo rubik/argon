@@ -1,9 +1,5 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
-#if __GLASGOW_HASKELL__ < 710
-{-# LANGUAGE DeriveDataTypeable #-}
-#endif
 
 module Argon.Types (ComplexityBlock(CC), AnalysisResult, Config(..)
                    , OutputMode(..), GhcParseError(..), defaultConfig)
@@ -11,7 +7,6 @@ module Argon.Types (ComplexityBlock(CC), AnalysisResult, Config(..)
 
 import Data.List (intercalate)
 import Data.Aeson
-import Data.Typeable
 import Control.Exception (Exception)
 
 import Argon.Loc
@@ -20,7 +15,7 @@ import Argon.Loc
 data GhcParseError = GhcParseError {
     loc :: Loc
   , msg :: String
-} deriving (Typeable)
+}
 
 -- | Hold the data associated to a function binding:
 --   @(location, function name, complexity)@.
