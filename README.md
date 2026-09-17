@@ -38,9 +38,9 @@ Simple as ``cabal install argon``.
 
 Argon parses Haskell using the standalone
 [`ghc-lib-parser`](https://hackage.haskell.org/package/ghc-lib-parser), so it is
-independent of the compiler used to build it. It builds with modern GHC (tested
-with GHC 9.10) and understands the Haskell syntax of its pinned `ghc-lib-parser`
-(currently the 9.12 series). Older `argon` releases targeting GHC 7.8–8.x can be
+independent of the compiler used to build it. Version 0.4.2.0 is tested with
+GHC 9.14 and understands the Haskell syntax of its pinned `ghc-lib-parser`
+(currently the 9.14 series). Older `argon` releases targeting GHC 7.8–8.x can be
 found on the [releases](https://github.com/rubik/argon/releases) page.
 
 ### About the complexity being measured
